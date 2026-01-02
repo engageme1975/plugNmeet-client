@@ -81,6 +81,9 @@
         grid-template-columns: 1fr 1fr;
         gap: 25px 20px;
       }
+      .inputs-wrapper.single-column {
+        grid-template-columns: 1fr;
+      }
       .btn {
         height: 40px;
         border-radius: 15px;
@@ -309,6 +312,77 @@
         }
       }
     </style>
+    <!-- Immediate script to preserve query parameters before any redirects -->
+    <script>
+        (function() {
+            'use strict';
+            // CRITICAL: This MUST run before ANY other script, including config.js
+            // Store in a way that survives page reloads
+            try {
+                const currentUrl = window.location.href;
+                const urlObj = new URL(currentUrl);
+                const urlParams = urlObj.searchParams;
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                
+                // Check if this is a Keycloak redirect (has auth response in hash or query)
+                const isKeycloakRedirect = hashParams.has('state') || hashParams.has('code') || 
+                                          urlParams.has('state') || urlParams.has('code') ||
+                                          urlParams.has('session_state') || urlParams.has('iss');
+                
+                if (isKeycloakRedirect) {
+                    // This is a Keycloak redirect - restore our original query params
+                    const storedParams = sessionStorage.getItem('pnm_query_params');
+                    if (storedParams) {
+                        const stored = new URLSearchParams(storedParams);
+                        // Merge stored params with current URL (don't overwrite Keycloak params)
+                        stored.forEach((value, key) => {
+                            if (!urlParams.has(key)) {
+                                urlParams.set(key, value);
+                            }
+                        });
+                        urlObj.search = urlParams.toString();
+                        window.history.replaceState({}, '', urlObj.toString());
+                        // Restored query params after Keycloak redirect
+                    }
+                } else {
+                    // Not a Keycloak redirect - check if we have custom query params to store
+                    const customParams = new URLSearchParams();
+                    urlParams.forEach((value, key) => {
+                        // Only store non-Keycloak params
+                        if (!['state', 'code', 'session_state', 'iss', 'error'].includes(key)) {
+                            customParams.set(key, value);
+                        }
+                    });
+                    
+                    if (customParams.toString()) {
+                        // Store custom query parameters IMMEDIATELY
+                        sessionStorage.setItem('pnm_query_params', customParams.toString());
+                        sessionStorage.setItem('pnm_original_url', currentUrl);
+                        // Stored query params for preservation
+                        
+                        // Also store in a way that's accessible immediately
+                        window._pnmStoredParams = customParams.toString();
+                    } else {
+                        // No custom params - try to restore from storage
+                        const storedParams = sessionStorage.getItem('pnm_query_params') || window._pnmStoredParams;
+                        if (storedParams) {
+                            const stored = new URLSearchParams(storedParams);
+                            stored.forEach((value, key) => {
+                                if (!urlParams.has(key)) {
+                                    urlParams.set(key, value);
+                                }
+                            });
+                            urlObj.search = urlParams.toString();
+                            window.history.replaceState({}, '', urlObj.toString());
+                            // Restored query params from storage
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('[Immediate] Error preserving query params:', e);
+            }
+        })();
+    </script>
 </head>
 <body>
 <div class="container">
@@ -316,109 +390,497 @@
         <img src="./assets/imgs/main-logo-light.png" alt="main-logo"/>
     </div>
     <div class="form">
-        <form action="#" method="POST" id="loginForm">
-            <div class="inputs-wrapper">
+        <!-- Keycloak Login Button (shown when not authenticated) -->
+        <div id="keycloak-login-container" style="display: none;">
+            <button id="keycloak-login-btn" class="btn btn-primary" style="width: 100%; height: 50px; font-size: 18px;">
+                Login with Keycloak
+            </button>
+        </div>
+        
+        <!-- Room Code Form (shown after Keycloak authentication if no room_id in URL) -->
+        <form action="#" method="POST" id="loginForm" style="display: none;">
+            <div class="inputs-wrapper single-column">
                 <div class="item">
-                    <label for="api_key" class="form-label">plugNmeet API Key</label>
+                    <label for="room_id" class="form-label">Room Code</label>
                     <input
                             type="text"
-                            name="api_key"
-                            id="api_key"
-                            value=""
+                            name="room_id"
+                            id="room_id"
+                            placeholder="Enter room code"
                             required
                             class="form-control"
+                            autocomplete="off"
                     />
-                </div>
-                <div class="item">
-                    <label for="api_secret" class="form-label"
-                    >plugNmeet API Secret</label
-                    >
-                    <input
-                            type="password"
-                            name="api_secret"
-                            id="api_secret"
-                            value=""
-                            required
-                            class="form-control"
-                    />
-                </div>
-                <div class="item select-wrap">
-                    <label for="room_id" class="form-label">Select Room</label>
-                    <select class="form-select" id="room_id" name="room_id">
-                        <option value="room01">Room 1</option>
-                        <option value="room02">Room 2</option>
-                        <option value="room03">Room 3</option>
-                        <option value="room04">Room 4</option>
-                        <option value="room05">Room 5</option>
-                        <option value="room06">Room 6</option>
-                        <option value="room07">Room 7</option>
-                        <option value="room08">Room 8</option>
-                        <option value="room09">Room 9</option>
-                        <option value="room10">Room 10</option>
-                        <option value="room11">Room 11</option>
-                        <option value="room12">Room 12</option>
-                        <option value="room13">Room 13</option>
-                        <option value="room14">Room 14</option>
-                        <option value="room15">Room 15</option>
-                    </select>
                 </div>
                 <div class="item select-wrap">
                     <label for="user_type" class="form-label">User type</label>
                     <select class="form-select" id="user_type" name="user_type">
+                        <option value="participant" selected>Participant</option>
                         <option value="admin">Admin</option>
-                        <option value="participant">Participant</option>
                     </select>
-                </div>
-                <div class="item">
-                    <label for="name" class="form-label">Name</label>
-                    <input
-                            type="text"
-                            name="name"
-                            id="name"
-                            required
-                            class="form-control"
-                    />
-                </div>
-                <div class="item">
-                    <label for="user_id" class="form-label">User Id</label>
-                    <input
-                            type="text"
-                            name="user_id"
-                            id="user_id"
-                            required
-                            class="form-control"
-                    />
                 </div>
             </div>
             <div class="buttons">
-                <button class="btn btn-primary" type="submit">Submit</button>
-                <button class="btn btn-danger" type="reset">Reset</button>
+                <button class="btn btn-primary" type="submit">Join Room</button>
+                <button class="btn btn-danger" type="button" id="logout-btn">Logout</button>
             </div>
         </form>
+        
+        <!-- Hidden fields for API calls -->
+        <input type="hidden" id="api_key" name="api_key" value="">
+        <input type="hidden" id="api_secret" name="api_secret" value="">
+        <input type="hidden" id="name" name="name" value="">
+        <input type="hidden" id="user_id" name="user_id" value="">
     </div>
 </div>
 
 <script type="text/javascript">
     const loginForm = document.getElementById('loginForm');
     let API_KEY, API_SECRET;
-    document.getElementById('user_id').value = Date.now();
-    document.getElementById('name').value =
-        'user-' + Math.floor(Math.random() * 100);
+    let keycloak = null;
+    let isKeycloakEnabled = false;
     const toUrl = window.location.href.replace(/\/login.*$/i, '');
 
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const data = new FormData(e.target);
+    // SessionStorage keys for preserving query parameters
+    const STORAGE_KEY_QUERY_PARAMS = 'pnm_query_params';
+    const STORAGE_KEY_ORIGINAL_URL = 'pnm_original_url';
 
+    // Get room_id from URL parameters
+    function getRoomIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        return urlParams.get('room_id') || hashParams.get('room_id') || null;
+    }
+
+    // Generate invite link for a room
+    function generateInviteLink(roomId, isAdmin = false) {
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/login.html');
+        let link = `${baseUrl}?room_id=${encodeURIComponent(roomId)}`;
+        if (isAdmin) {
+            link += '&joinasadmin';
+        }
+        return link;
+    }
+
+    // Show invite link section
+    function showInviteLink(inviteLink) {
+        // Create invite section if it doesn't exist
+        let inviteSection = document.getElementById('invite-link-section');
+        if (!inviteSection) {
+            const form = document.getElementById('loginForm');
+            if (form) {
+                inviteSection = document.createElement('div');
+                inviteSection.id = 'invite-link-section';
+                inviteSection.className = 'item';
+                inviteSection.innerHTML = `
+                    <label for="invite_link" class="form-label">Invite Link</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input
+                                type="text"
+                                id="invite_link"
+                                readonly
+                                class="form-control"
+                                style="flex: 1;"
+                        />
+                        <button type="button" class="btn btn-primary" id="copy-invite-btn" style="min-width: 100px;">
+                            Copy Link
+                        </button>
+                    </div>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Share this link with participants to join the room
+                    </small>
+                `;
+                form.querySelector('.inputs-wrapper').appendChild(inviteSection);
+            }
+        }
+        
+        const inviteInput = document.getElementById('invite_link');
+        if (inviteInput) {
+            inviteInput.value = inviteLink;
+            inviteSection.style.display = 'block';
+            
+            // Setup copy button
+            const copyBtn = document.getElementById('copy-invite-btn');
+            if (copyBtn) {
+                copyBtn.onclick = () => {
+                    inviteInput.select();
+                    inviteInput.setSelectionRange(0, 99999); // For mobile devices
+                    document.execCommand('copy');
+                    
+                    // Visual feedback
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Copied!';
+                    copyBtn.style.backgroundColor = '#28a745';
+                    
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.backgroundColor = '';
+                    }, 2000);
+                };
+            }
+        }
+    }
+
+    // Check if joinasadmin parameter is present in URL
+    function checkJoinAsAdmin() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        // Check both query params and hash params
+        const hasJoinAsAdmin = urlParams.has('joinasadmin') || hashParams.has('joinasadmin');
+        // Check if joinasadmin parameter is present
+        return hasJoinAsAdmin;
+    }
+
+    // Store query parameters in sessionStorage
+    function storeQueryParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const customParams = new URLSearchParams();
+        
+        // Only store non-Keycloak params
+        urlParams.forEach((value, key) => {
+            if (!['state', 'code', 'session_state', 'iss', 'error'].includes(key)) {
+                customParams.set(key, value);
+            }
+        });
+        
+        if (customParams.toString()) {
+            sessionStorage.setItem(STORAGE_KEY_QUERY_PARAMS, customParams.toString());
+            sessionStorage.setItem(STORAGE_KEY_ORIGINAL_URL, window.location.href);
+            // Stored query params in sessionStorage
+        }
+    }
+
+    // Restore query parameters from sessionStorage if they were lost
+    function restoreQueryParams() {
+        const currentParams = new URLSearchParams(window.location.search);
+        const storedParams = sessionStorage.getItem(STORAGE_KEY_QUERY_PARAMS);
+        
+        // Check if we have Keycloak auth params (means we just came back from Keycloak)
+        const hasKeycloakParams = currentParams.has('state') || currentParams.has('code') || 
+                                   currentParams.has('session_state') ||
+                                   window.location.hash.includes('state=') || 
+                                   window.location.hash.includes('code=');
+        
+        // If we have stored params and either no current params OR we have Keycloak params, restore
+        if (storedParams && (!currentParams.toString() || hasKeycloakParams)) {
+            const url = new URL(window.location.href);
+            const stored = new URLSearchParams(storedParams);
+            
+            // Restore all stored parameters (don't overwrite Keycloak params)
+            stored.forEach((value, key) => {
+                if (!currentParams.has(key)) {
+                    url.searchParams.set(key, value);
+                }
+            });
+            
+            // Update URL without page reload
+            window.history.replaceState({}, '', url.toString());
+            // Restored query params from sessionStorage
+            
+            // Don't clear stored params yet - keep them for the next page load if needed
+            return true;
+        }
+        return false;
+    }
+
+    // Preserve all query parameters in a URL
+    function preserveQueryParams(baseUrl) {
+        const targetUrl = new URL(baseUrl);
+        
+        // First, try to get params from current URL (excluding Keycloak params)
+        const currentUrl = new URL(window.location.href);
+        const currentParams = currentUrl.searchParams;
+        const customParams = new URLSearchParams();
+        
+        currentParams.forEach((value, key) => {
+            // Only preserve non-Keycloak params
+            if (!['state', 'code', 'session_state', 'iss', 'error'].includes(key)) {
+                customParams.set(key, value);
+            }
+        });
+        
+        // If no params in current URL, try to restore from sessionStorage
+        if (!customParams.toString()) {
+            const storedParams = sessionStorage.getItem(STORAGE_KEY_QUERY_PARAMS);
+            if (storedParams) {
+                const stored = new URLSearchParams(storedParams);
+                stored.forEach((value, key) => {
+                    customParams.set(key, value);
+                });
+            }
+        }
+        
+        // Copy all custom query parameters to target URL
+        customParams.forEach((value, key) => {
+            targetUrl.searchParams.set(key, value);
+        });
+        
+        return targetUrl.toString();
+    }
+
+    // Get redirect URI with preserved query parameters
+    function getRedirectUriWithParams() {
+        const keycloakConfig = window.plugNmeetConfig?.keycloak;
+        let baseRedirectUri = keycloakConfig?.redirectUri || window.location.origin + window.location.pathname;
+        
+        // Ensure baseRedirectUri doesn't have query params (we'll add them)
+        const baseUrl = new URL(baseRedirectUri);
+        baseUrl.search = ''; // Clear any existing query params
+        baseRedirectUri = baseUrl.toString();
+        
+        // Preserve all current query parameters
+        const redirectUri = preserveQueryParams(baseRedirectUri);
+        
+        // Build redirect URI with preserved query params
+        
+        return redirectUri;
+    }
+
+    // Restore query parameters immediately on page load (before any other code runs)
+    restoreQueryParams();
+
+    // Check if Keycloak is enabled
+    if (typeof window.plugNmeetConfig !== 'undefined' && 
+        window.plugNmeetConfig.keycloak && 
+        window.plugNmeetConfig.keycloak.enabled) {
+        isKeycloakEnabled = true;
+    }
+
+    // Load Keycloak library
+    async function loadKeycloakLibrary() {
+        // Check if already loaded
+        if (window.Keycloak) {
+            return window.Keycloak;
+        }
+
+        // Try to load from CDN
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/keycloak-js@25.0.4/dist/keycloak.min.js';
+            script.type = 'text/javascript';
+            script.onload = () => {
+                if (window.Keycloak) {
+                    resolve(window.Keycloak);
+                } else {
+                    reject(new Error('Keycloak not found on window object'));
+                }
+            };
+            script.onerror = () => {
+                reject(new Error('Failed to load Keycloak from CDN'));
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    // Initialize Keycloak if enabled
+    async function initKeycloak() {
+        if (!isKeycloakEnabled) {
+            return false;
+        }
+
+        try {
+            // Load Keycloak library
+            const KeycloakClass = await loadKeycloakLibrary();
+
+            const keycloakConfig = window.plugNmeetConfig.keycloak;
+            keycloak = new KeycloakClass({
+                url: keycloakConfig.url,
+                realm: keycloakConfig.realm,
+                clientId: keycloakConfig.clientId,
+            });
+
+            // Store query parameters before Keycloak initialization (in case of redirect)
+            storeQueryParams();
+            
+            // Store query parameters before Keycloak initialization
+            storeQueryParams();
+            
+            // Build redirect URI with all current query parameters preserved
+            const redirectUri = getRedirectUriWithParams();
+            // Keycloak init with preserved query params in redirect URI
+
+            // Initialize Keycloak with redirect URI that includes query parameters
+            const authenticated = await keycloak.init({
+                onLoad: 'check-sso',
+                redirectUri: redirectUri,
+                checkLoginIframe: false,
+            });
+            
+            // After initialization, restore params if they were lost during redirect
+            restoreQueryParams();
+
+            if (authenticated) {
+                // User is authenticated, extract user info
+                await handleKeycloakAuth();
+            } else {
+                // User not authenticated, show login button or redirect
+                showKeycloakLogin();
+            }
+
+            return authenticated;
+        } catch (error) {
+            console.error('Keycloak initialization failed:', error);
+            alert('Keycloak authentication failed. Please check your configuration. Error: ' + error.message);
+            // Fallback to API key/secret form
+            showApiKeyForm();
+            return false;
+        }
+    }
+
+    function showKeycloakLogin() {
+        // Hide the form
+        const form = document.getElementById('loginForm');
+        if (form) form.style.display = 'none';
+        
+        // Show Keycloak login button
+        const loginContainer = document.getElementById('keycloak-login-container');
+        const loginBtn = document.getElementById('keycloak-login-btn');
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (loginBtn && keycloak) {
+            loginBtn.onclick = () => {
+                // Store query parameters before redirect
+                storeQueryParams();
+                
+                // Preserve query parameters when redirecting to Keycloak login
+                const redirectUri = getRedirectUriWithParams();
+                // Keycloak login with preserved query params
+                
+                // Call login with redirect URI that includes query parameters
+                try {
+                    keycloak.login({
+                        redirectUri: redirectUri
+                    });
+                } catch (error) {
+                    console.error('Keycloak login error:', error);
+                    // Fallback: try without redirectUri option
+                    keycloak.login();
+                }
+            };
+        }
+    }
+
+    function showApiKeyForm() {
+        // Show API key/secret fields (fallback mode)
+        const apiKeyItem = document.getElementById('api_key_item');
+        const apiSecretItem = document.getElementById('api_secret_item');
+        if (apiKeyItem) apiKeyItem.style.display = 'block';
+        if (apiSecretItem) apiSecretItem.style.display = 'block';
+        
+        // Show name and user_id fields
+        const nameItem = document.getElementById('name_item');
+        const userIdItem = document.getElementById('user_id_item');
+        if (nameItem) nameItem.style.display = 'block';
+        if (userIdItem) userIdItem.style.display = 'block';
+        
+        // Show the form
+        const form = document.getElementById('loginForm');
+        if (form) form.style.display = 'block';
+        
+        // Make fields required
+        const apiKey = document.getElementById('api_key');
+        const apiSecret = document.getElementById('api_secret');
+        const name = document.getElementById('name');
+        const userId = document.getElementById('user_id');
+        if (apiKey) apiKey.required = true;
+        if (apiSecret) apiSecret.required = true;
+        if (name) name.required = true;
+        if (userId) userId.required = true;
+        
+        isKeycloakEnabled = false;
+    }
+
+    async function handleKeycloakAuth() {
+        if (!keycloak || !keycloak.authenticated) {
+            return;
+        }
+
+        // Extract user info from token
+        const token = keycloak.token;
+        const tokenParsed = keycloak.tokenParsed;
+        
+        // Update hidden form fields with user info from Keycloak
+        if (tokenParsed) {
+            const nameField = document.getElementById('name');
+            const userIdField = document.getElementById('user_id');
+            
+            // Use preferred_username, name, or sub from token
+            let userName = tokenParsed.preferred_username || 
+                          tokenParsed.name;
+            
+            if (!userName && (tokenParsed.given_name || tokenParsed.family_name)) {
+                userName = (tokenParsed.given_name || '') + ' ' + (tokenParsed.family_name || '');
+            }
+            
+            if (!userName) {
+                userName = tokenParsed.sub || 'user-' + Math.floor(Math.random() * 100);
+            }
+            
+            const userId = tokenParsed.sub || Date.now().toString();
+            
+            if (nameField) nameField.value = userName.trim();
+            if (userIdField) userIdField.value = userId;
+        }
+
+        // Hide login button
+        const loginContainer = document.getElementById('keycloak-login-container');
+        if (loginContainer) loginContainer.style.display = 'none';
+
+        // Check if room_id is in URL
+        const roomIdFromUrl = getRoomIdFromUrl();
+        
+        if (roomIdFromUrl) {
+            // Auto-join room if room_id is in URL
+            // Check if joinasadmin is in URL - if so, force admin mode
+            const joinAsAdmin = checkJoinAsAdmin();
+            const userInfo = {
+                is_admin: joinAsAdmin || (document.getElementById('user_type')?.value === 'admin'),
+                name: document.getElementById('name')?.value || 'User',
+                user_id: document.getElementById('user_id')?.value || Date.now().toString(),
+            };
+            
+            // Auto-joining with user info
+            await joinRoom(roomIdFromUrl, userInfo);
+            
+            // Show invite link after successful join
+            const inviteLink = generateInviteLink(roomIdFromUrl, joinAsAdmin);
+            showInviteLink(inviteLink);
+        } else {
+            // Show room code input form
+            const form = document.getElementById('loginForm');
+            if (form) {
+                form.style.display = 'block';
+            }
+            
+            // If joinasadmin is in URL, set user type to admin
+            const joinAsAdmin = checkJoinAsAdmin();
+            if (joinAsAdmin) {
+                const userTypeSelect = document.getElementById('user_type');
+                if (userTypeSelect) {
+                    userTypeSelect.value = 'admin';
+                    // Set user_type to admin because joinasadmin is in URL
+                }
+            }
+            
+            // Setup logout button
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.onclick = async () => {
+                    await keycloak.logout();
+                };
+            }
+        }
+
+        // Store token for API requests
+        window.keycloakToken = token;
+    }
+    
+    async function joinRoom(roomId, userInfo) {
         const roomInfo = {
-            room_id: data.get('room_id'),
+            room_id: roomId,
             empty_timeout: 60 * 60 * 2,
             metadata: {
-                room_title: 'Demo room',
-                welcome_message:
-                    'Welcome to plugNmeet!<br /> To share microphone click mic icon from bottom left side.',
-                //webhook_url: "http://example.com",
-                //logout_url: "http://example.com",
+                room_title: 'Meeting Room',
+                welcome_message: 'Welcome to plugNmeet!',
                 room_features: {
                     allow_webcams: true,
                     mute_on_start: false,
@@ -492,39 +954,182 @@
                     end_to_end_encryption_features: {
                         is_enabled: false,
                         included_chat_messages: false,
-                        // this may use more CPU for the user end.
-                        // do not enable it unless really necessary
                         included_whiteboard: false,
-                        // if true then user will have to insert
-                        // shared key manually
                         enabled_self_insert_encryption_key: false,
                     },
                 },
-                // default_lock_settings: {
-                //     lock_microphone: true,
-                //     lock_screen_sharing: true,
-                //     lock_webcam: true,
-                //     lock_chat_file_share: true,
-                //     lock_chat_send_message: true
-                // }
             },
         };
 
-        const userInfo = {
-            is_admin: data.get('user_type') === 'admin',
-            name: data.get('name'),
-            user_id: data.get('user_id'),
-            /*user_metadata: {
-                  record_webcam: false,
-                  preferred_lang: "bn-BD",
-              }*/
-        };
+        await processRequest(roomInfo, userInfo);
+    }
 
-        API_KEY = data.get('api_key');
-        API_SECRET = data.get('api_secret');
+    // Initialize on page load
+    const joinAsAdmin = checkJoinAsAdmin();
+    const roomIdFromUrl = getRoomIdFromUrl();
+    
+    // Function to handle auto-join (called after all functions are defined)
+    function handleAutoJoin() {
+        if (roomIdFromUrl && !joinAsAdmin) {
+            // Auto-joining as participant (no joinasadmin parameter)
+            
+            // Hide form
+            const form = document.getElementById('loginForm');
+            if (form) form.style.display = 'none';
+            
+            // Hide Keycloak login button
+            const loginContainer = document.getElementById('keycloak-login-container');
+            if (loginContainer) loginContainer.style.display = 'none';
+            
+            // Set default values for participant
+            const userIdField = document.getElementById('user_id');
+            const nameField = document.getElementById('name');
+            
+            if (userIdField) userIdField.value = Date.now();
+            if (nameField) nameField.value = 'user-' + Math.floor(Math.random() * 100);
+            
+            // Auto-join as participant
+            const userInfo = {
+                is_admin: false,
+                name: document.getElementById('name')?.value || 'User',
+                user_id: document.getElementById('user_id')?.value || Date.now().toString(),
+            };
+            
+            // Auto-joining room as participant
+            joinRoom(roomIdFromUrl, userInfo).catch(err => {
+                console.error('Auto-join failed:', err);
+                alert('Failed to join room. Please try again.');
+                // Show form on error
+                if (form) form.style.display = 'block';
+            });
+            return true; // Indicate auto-join was triggered
+        }
+        return false; // No auto-join
+    }
+    
+    // Auto-join as participant if room_id exists but no joinasadmin
+    // We'll call handleAutoJoin at the end of the script after all functions are defined
+    const shouldAutoJoin = roomIdFromUrl && !joinAsAdmin;
+    if (shouldAutoJoin) {
+        // Hide form immediately
+        const form = document.getElementById('loginForm');
+        if (form) form.style.display = 'none';
+        
+        // Hide Keycloak login button
+        const loginContainer = document.getElementById('keycloak-login-container');
+        if (loginContainer) loginContainer.style.display = 'none';
+    }
+    
+    if (!shouldAutoJoin && isKeycloakEnabled) {
+        // Check if joinasadmin is present - if yes, require Keycloak; if no, allow participant join
+        if (joinAsAdmin) {
+            // Admin join requires Keycloak authentication
+            // Hide form initially when Keycloak is enabled
+            const form = document.getElementById('loginForm');
+            if (form) form.style.display = 'none';
+            
+            // Show login button container
+            const loginContainer = document.getElementById('keycloak-login-container');
+            if (loginContainer) loginContainer.style.display = 'block';
+            
+            initKeycloak().catch(err => {
+                console.error('Keycloak init error:', err);
+                alert('Keycloak authentication failed. Please refresh the page.');
+            });
+        } else {
+            // No joinasadmin and no room_id - show form for manual entry
+            // No joinasadmin parameter - showing form for participant join
+            
+            // Show form for participant join
+            const form = document.getElementById('loginForm');
+            if (form) form.style.display = 'block';
+            
+            // Hide Keycloak login button
+            const loginContainer = document.getElementById('keycloak-login-container');
+            if (loginContainer) loginContainer.style.display = 'none';
+            
+            // Set default values for participant mode
+            const userIdField = document.getElementById('user_id');
+            const nameField = document.getElementById('name');
+            const userTypeSelect = document.getElementById('user_type');
+            
+            if (userIdField) userIdField.value = Date.now();
+            if (nameField) nameField.value = 'user-' + Math.floor(Math.random() * 100);
+            if (userTypeSelect) userTypeSelect.value = 'participant'; // Force participant mode
+            
+            // Hide user type selector for participant joins (they're always participants)
+            if (userTypeSelect && userTypeSelect.parentElement) {
+                userTypeSelect.parentElement.style.display = 'none';
+            }
+        }
+    } else {
+        // Fallback: Show form if Keycloak is not enabled
+        const form = document.getElementById('loginForm');
+        if (form) form.style.display = 'block';
+        
+        // Set default values for non-Keycloak mode
+        const userIdField = document.getElementById('user_id');
+        const nameField = document.getElementById('name');
+        if (userIdField) userIdField.value = Date.now();
+        if (nameField) nameField.value = 'user-' + Math.floor(Math.random() * 100);
+    }
 
-        processRequest(roomInfo, userInfo);
-    });
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Check if joinasadmin is present - only require Keycloak for admin joins
+            const joinAsAdmin = checkJoinAsAdmin();
+            
+            // If Keycloak is enabled AND joinasadmin is present, require Keycloak authentication
+            if (isKeycloakEnabled && joinAsAdmin) {
+                if (!keycloak || !keycloak.authenticated) {
+                    alert('Please login with Keycloak first');
+                    storeQueryParams();
+                    const redirectUri = getRedirectUriWithParams();
+                    await keycloak.login({ redirectUri: redirectUri });
+                    return;
+                }
+                
+                // Refresh token before proceeding
+                try {
+                    await keycloak.updateToken(30);
+                    window.keycloakToken = keycloak.token;
+                } catch (error) {
+                    console.error('Failed to refresh token:', error);
+                    storeQueryParams();
+                    const redirectUri = getRedirectUriWithParams();
+                    await keycloak.login({ redirectUri: redirectUri });
+                    return;
+                }
+            }
+            // If Keycloak is enabled but joinasadmin is NOT present, allow participant join without Keycloak
+            // (No Keycloak authentication required for participants)
+
+            const data = new FormData(e.target);
+            const roomId = data.get('room_id');
+            
+            if (!roomId) {
+                alert('Please enter a room code');
+                return;
+            }
+
+            // For participant joins (no joinasadmin), always set is_admin to false
+            // For admin joins (joinasadmin present), set is_admin based on joinasadmin or user_type
+            const userInfo = {
+                is_admin: joinAsAdmin ? (joinAsAdmin || (data.get('user_type') === 'admin')) : false,
+                name: document.getElementById('name')?.value || 'User',
+                user_id: document.getElementById('user_id')?.value || Date.now().toString(),
+            };
+
+            // Form submit with user info
+            await joinRoom(roomId, userInfo);
+            
+            // Show invite link after successful join
+            const inviteLink = generateInviteLink(roomId, joinAsAdmin);
+            showInviteLink(inviteLink);
+        });
+    }
 
     processRequest = async (roomInfo, userInfo) => {
         // let's check if room is active or not
@@ -571,21 +1176,82 @@
 
     sendRequest = async (body, method) => {
         const b = JSON.stringify(body);
-        const signature = await getHashSignature(API_SECRET, b);
-
         let headers = {
             'Content-Type': 'application/json',
-            'API-KEY': API_KEY,
-            'HASH-SIGNATURE': signature,
         };
+
+        // Check if joinasadmin is present - only require Keycloak for admin joins
+        const joinAsAdmin = checkJoinAsAdmin();
+        const requiresKeycloak = isKeycloakEnabled && joinAsAdmin;
+        
+        // Use Keycloak token for API authentication (only for admin joins)
+        if (requiresKeycloak && keycloak && keycloak.authenticated && keycloak.token) {
+            // Refresh token if needed
+            try {
+                const refreshed = await keycloak.updateToken(30); // Refresh if less than 30 seconds left
+                if (refreshed) {
+                    window.keycloakToken = keycloak.token;
+                }
+            } catch (error) {
+                console.error('Failed to refresh token:', error);
+                // Token refresh failed, try to re-authenticate
+                storeQueryParams();
+                const redirectUri = getRedirectUriWithParams();
+                await keycloak.login({ redirectUri: redirectUri });
+                return;
+            }
+
+            // Use Keycloak Bearer token for authentication
+            // The backend must be configured to accept Keycloak tokens
+            headers['Authorization'] = 'Bearer ' + keycloak.token;
+        } else if (requiresKeycloak) {
+            // Keycloak is required for admin joins but user not authenticated
+            alert('Please login with Keycloak first');
+            if (keycloak) {
+                storeQueryParams();
+                const redirectUri = getRedirectUriWithParams();
+                await keycloak.login({ redirectUri: redirectUri });
+            }
+            return { status: false, msg: 'Not authenticated' };
+        } else {
+            // For participant joins without Keycloak authentication
+            // Use regular /auth endpoint (not keycloak-auth) since we don't have a token
+            // The backend should handle API key/secret authentication directly
+            // Note: API credentials should be configured server-side or provided here
+            if (API_SECRET && API_KEY) {
+                // Use API key/secret authentication if available
+                const signature = await getHashSignature(API_SECRET, b);
+                headers['API-KEY'] = API_KEY;
+                headers['HASH-SIGNATURE'] = signature;
+            } else {
+                // API credentials not available - this should be handled server-side
+                // For now, log a warning but proceed (backend may have default credentials)
+                console.warn('API credentials not available for participant join - backend should handle authentication');
+            }
+        }
 
         let serverUrl = window.PLUG_N_MEET_SERVER_URL;
         if (typeof window.plugNmeetConfig !== "undefined"){
             serverUrl = window.plugNmeetConfig.serverUrl
         }
 
+        // Determine which endpoint to use
+        let authPath = '/auth/' + method;
+        if (requiresKeycloak && keycloak && keycloak.authenticated) {
+            // Admin joins with Keycloak token - use keycloak-auth endpoint
+            authPath = '/keycloak-auth/auth/' + method;
+        } else if (isKeycloakEnabled && !joinAsAdmin) {
+            // Participant joins (Keycloak enabled but no joinasadmin) - use participant-auth endpoint
+            // This endpoint injects API credentials server-side without requiring Keycloak token
+            authPath = '/participant-auth/auth/' + method;
+        } else {
+            // Keycloak disabled - use regular /auth endpoint
+            // This endpoint should handle API key/secret authentication
+            authPath = '/auth/' + method;
+        }
+
         const response = await fetch(
-            serverUrl + '/auth/' + method,
+            serverUrl + authPath,
             {
                 method: 'POST',
                 headers: headers,
@@ -594,9 +1260,16 @@
         );
 
         if (response.status !== 200) {
-            alert(response.statusText);
-            console.log(response.json());
-            return;
+            const errorText = response.statusText;
+            let errorMsg = errorText;
+            try {
+                const errorJson = await response.json();
+                errorMsg = errorJson.msg || errorText;
+            } catch (e) {
+                // Ignore JSON parse errors
+            }
+            alert(errorMsg);
+            return { status: false, msg: errorMsg };
         }
 
         return await response.json();
@@ -633,6 +1306,11 @@
         const hashArray = Array.from(new Uint8Array(signature));
         return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
     };
+    
+    // Call handleAutoJoin after all functions are defined
+    if (typeof handleAutoJoin === 'function') {
+        handleAutoJoin();
+    }
 </script>
 </body>
 </html>

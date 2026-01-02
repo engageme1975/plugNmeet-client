@@ -89,4 +89,21 @@ window.plugNmeetConfig = {
   // Databases older than this will be cleaned up on startup (in milliseconds).
   // Default: 6 hours.
   // dbMaxAgeMs: 6 * 60 * 60 * 1000,
+
+  // Keycloak authentication configuration
+  // If enabled, the login page will use Keycloak for authentication instead of API key/secret
+  /*keycloak: {
+    enabled: true,
+    url: 'https://keycloak.example.com',
+    realm: 'your-realm',
+    clientId: 'plugnmeet-client',
+    redirectUri: window.location.origin + '/login.html',
+  },*/
+  
+  // API credentials for plugNmeet backend (required even when using Keycloak)
+  // These are used for backend authorization while Keycloak handles user authentication
+  /*apiCredentials: {
+    apiKey: 'your-api-key',
+    apiSecret: 'your-api-secret',
+  },*/
 };
