@@ -509,9 +509,17 @@
             authPath = '/keycloak-auth/auth/';
           }
 
-          const post = (m, b) => fetch(server + authPath + m, {
-            method: 'POST', headers, body: JSON.stringify(b)
-          }).then(r => r.json());
+          const post = async (m, b) => {
+            const res = await fetch(server + authPath + m, {
+              method: 'POST', headers, body: JSON.stringify(b)
+            });
+
+            if (!res.ok) {
+              throw new Error(`${m} failed with status ${res.status}`);
+            }
+
+            return res.json();
+          };
 
           const active = await post('room/isRoomActive', { room_id: roomId });
           if (!active.is_active) {
@@ -523,6 +531,11 @@
           }
 
           const join = await post('room/getJoinToken', { room_id: roomId, user_info: user });
+          if (!join || !join.token) {
+            const reason = join?.message || join?.error || 'No token returned';
+            throw new Error(`getJoinToken missing token: ${reason}`);
+          }
+
           location.href = '/?access_token=' + join.token;
         } catch (error) {
           setLoading(false);
