@@ -8,10 +8,10 @@ window.plugNmeetConfig = {
   // staticAssetsPath: '',
 
   // Custom logos. For best results, use direct HTTPS links.
-  /*customLogo: {
-    main_logo_light: 'https://mydomain.com/logo_light.png',
-    main_logo_dark: 'https://mydomain.com/logo_dark.png',
-  },*/
+  customLogo: {
+    main_logo_light: 'https://engage-ai.engage-me.co.uk/brand-assets/logo_thumbnail.svg',
+    main_logo_dark: 'https://engage-ai.engage-me.co.uk/brand-assets/logo_thumbnail.svg',
+  },
 
   // Dynacast dynamically pauses video layers that are not being consumed by any subscribers,
   // significantly reducing publishing CPU and bandwidth usage.

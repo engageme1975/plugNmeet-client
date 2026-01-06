@@ -13,6 +13,8 @@ import { store, useAppDispatch, useAppSelector } from '../../store';
 import { selectVisibleParticipants } from '../../store/slices/participantSlice';
 import { setActiveSidePanel } from '../../store/slices/bottomIconsActivitySlice';
 
+import InviteButton from './InviteButton';
+
 const ParticipantsComponent = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -100,12 +102,13 @@ const ParticipantsComponent = () => {
         <CloseIconSVG />
       </div>
       <div className="inner-wrapper relative z-20 w-full">
-        <div className="top flex items-center h-10 px-3 3xl:px-5">
+        <div className="top flex items-center justify-between h-10 px-3 3xl:px-5">
           <p className="text-sm text-Gray-950 dark:text-white font-medium leading-tight">
             {t('left-panel.participants', {
               total: participants.length,
             })}
           </p>
+          <InviteButton />
         </div>
         <div className="search-participants-wrap h-[55px] flex items-center px-3 3xl:px-5 border-y border-Gray-200 dark:border-Gray-800">
           <div className="w-full relative">

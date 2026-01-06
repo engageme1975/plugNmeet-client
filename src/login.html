@@ -1,1316 +1,584 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Login</title>
-    <!-- <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
-      crossorigin="anonymous"
-    /> -->
-    <script src="./assets/config.js"></script>
-    <link rel="icon" type="image/x-icon" href="./assets/imgs/favicon.ico"/>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-            rel="stylesheet"
-    />
-    <style>
-      input:-webkit-autofill,
-      input:-webkit-autofill:hover,
-      input:-webkit-autofill:focus,
-      input:-webkit-autofill:active {
-        -webkit-box-shadow: 0 0 0 1000px white inset !important;
-        -webkit-text-fill-color: #000 !important;
-      }
-      * {
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-        font-family: 'Inter', sans-serif;
-      }
-      body {
-        height: 100%;
-        display: flex;
-        background-color: #f0f6fc;
-      }
-      html {
-        height: 100%;
-      }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join Meeting - plugNmeet</title>
+
+  <script src="./assets/config.js"></script>
+  <link rel="icon" href="./assets/imgs/favicon.ico" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Inter, sans-serif
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      display: flex;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+    }
+
+    .container {
+      margin: auto;
+      max-width: 480px;
+      width: 100%;
+      padding: 20px
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 32px
+    }
+
+    .logo img {
+      height: 50px;
+      filter: brightness(0) invert(1)
+    }
+
+    .card {
+      background: #fff;
+      padding: 32px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2)
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      text-align: center
+    }
+
+    .card-subtitle {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      margin-bottom: 24px
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+      color: #333;
+      font-size: 14px
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid #e0e0e0;
+      font-size: 16px;
+      transition: all 0.2s
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #00a1f2;
+      box-shadow: 0 0 0 4px rgba(0, 161, 242, 0.1)
+    }
+
+    .input-group {
+      margin-bottom: 20px
+    }
+
+    .role-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px
+    }
+
+    .role-btn {
+      padding: 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: #666
+    }
+
+    .role-btn:hover {
+      border-color: #00a1f2;
+      background: #f0f8ff
+    }
+
+    .role-btn.active {
+      border-color: #00a1f2;
+      background: #00a1f2;
+      color: #fff
+    }
+
+    .role-btn.active:hover {
+      background: #0088CC
+    }
+
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      background: #00a1f2;
+      transition: all 0.2s
+    }
+
+    .btn-primary:hover {
+      background: #0088CC;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 161, 242, 0.3)
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .btn-danger {
+      background: #fa3232;
+      height: 40px;
+      min-width: 100px;
+      border-radius: 10px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      border: none;
+      font-size: 14px
+    }
+
+    .btn-danger:hover {
+      background: #d62828
+    }
+
+    .status-info {
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      background: #e7f3ff;
+      color: #0066cc;
+      font-size: 14px;
+      line-height: 1.6
+    }
+
+    .status-info strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px
+    }
+
+    .status-info.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb
+    }
+
+    .status-info.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none
+    }
+
+    .error-text {
+      color: #fa3232;
+      font-size: 13px;
+      margin-top: 4px;
+      display: none
+    }
+
+    @media(max-width:480px) {
       .container {
-        margin: auto;
-        width: 100%;
-        max-width: 1000px;
-        padding: 40px 20px;
+        padding: 16px
       }
 
-      input,
-      select {
-        border-radius: 15px;
-        border: 1px solid var(--Gray-300, #c2daf2);
-        background: var(--White, #fff);
-        box-shadow: 0px 1px 2px 0px rgba(0, 43, 64, 0.05);
-        padding: 10px 14px;
-        width: 100%;
-        outline: none;
-        font-size: 16px;
-      }
-      label {
-        display: block;
-        font-size: 16px;
-        font-weight: 500;
-        color: #233240;
-        margin-bottom: 8px;
-      }
-      input:focus,
-      select:focus {
-        box-shadow: 0px 0px 0px 4px rgba(124, 206, 247, 0.25);
-        border-color: rgba(0, 161, 242, 1);
-      }
-      form#loginForm {
-        background-color: #fff;
-        padding: 40px 30px 30px;
-        border-radius: 24px;
-      }
-      .inputs-wrapper {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 25px 20px;
-      }
-      .inputs-wrapper.single-column {
-        grid-template-columns: 1fr;
-      }
-      .btn {
-        height: 40px;
-        border-radius: 15px;
-        box-shadow:
-          0px 2px 2px 0px rgba(255, 255, 255, 0.3) inset,
-          0px 1px 2px 0px rgba(0, 43, 64, 0.05);
-        min-width: 140px;
-        font-size: 16px;
-        font-weight: 600;
-        color: #fff;
-        cursor: pointer;
-        transition: all 0.3s ease-in;
-      }
-      .btn-danger {
-        border: 1px solid var(--Red-600, #c00);
-        background: var(--Red-400, #fa3232);
-      }
-      .btn-primary {
-        border: 1px solid var(--Blue-600, #08c);
-        background: var(--Blue-500, #00a1f2);
-      }
-      .btn-danger:hover {
-        background-color: #cc0000;
-      }
-      .btn-primary:hover {
-        background-color: #08c;
-      }
-      form#loginForm .buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 22px;
-      }
-      h5.card-title {
-        font-size: 22px;
-        text-align: center;
-        margin-bottom: 20px;
-        font-weight: 500;
-      }
-      select {
-        background-color: rgb(255, 255, 255);
-        background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/PgoKCjwhLS0gTGljZW5zZTogUEQuIE1hZGUgYnkgaWNvbnM4OiBodHRwczovL2dpdGh1Yi5jb20vaWNvbnM4L3dpbmRvd3MtMTAtaWNvbnMgLS0+CjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgCgkgdmlld0JveD0iMCAwIDMyIDMyIiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBvbHlsaW5lIHN0eWxlPSJmaWxsOm5vbmU7c3Ryb2tlOiMwMDAwMDA7c3Ryb2tlLXdpZHRoOjI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7IiBwb2ludHM9IjI4LjUsMTEuNSAxNiwyNCAzLjUsMTEuNSAiLz4KPC9zdmc+);
-        background-repeat: no-repeat;
-        background-size: 16px 12px;
-        appearance: none;
-        background-position: right 0.75rem center;
-      }
-      .logo {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 10px;
-      }
-      .logo img {
-        height: 55px;
-      }
-      select {
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.487 4.484-4.487L15.484 8.5 10 14l-5.484-5.5z'/></svg>");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        padding-right: 30px;
-      }
-      @media screen and (max-width: 767px) {
-        .inputs-wrapper {
-          grid-template-columns: 1fr;
-        }
-
-        .container {
-            margin: auto;
-            width: 100%;
-            max-width: 1000px;
-            padding: 40px 20px;
-        }
-
-        input,
-        select {
-            border-radius: 15px;
-            border: 1px solid var(--Gray-300, #c2daf2);
-            background: var(--White, #fff);
-            box-shadow: 0px 1px 2px 0px rgba(0, 43, 64, 0.05);
-            padding: 10px 14px;
-            width: 100%;
-            outline: none;
-            font-size: 16px;
-        }
-
-        label {
-            display: block;
-            font-size: 16px;
-            font-weight: 500;
-            color: #233240;
-            margin-bottom: 8px;
-        }
-
-        input:focus,
-        select:focus {
-            box-shadow: 0px 0px 0px 4px rgba(124, 206, 247, 0.25);
-            border-color: rgba(0, 161, 242, 1);
-        }
-
-        form#loginForm {
-            background-color: #fff;
-            padding: 40px 30px 30px;
-            border-radius: 24px;
-        }
-
-        .inputs-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px 20px;
-        }
-
-        .btn {
-            height: 40px;
-            border-radius: 15px;
-            box-shadow: 0px 2px 2px 0px rgba(255, 255, 255, 0.3) inset,
-            0px 1px 2px 0px rgba(0, 43, 64, 0.05);
-            min-width: 140px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s ease-in;
-        }
-
-        .btn-danger {
-            border: 1px solid var(--Red-600, #c00);
-            background: var(--Red-400, #fa3232);
-        }
-
-        .btn-primary {
-            border: 1px solid var(--Blue-600, #08c);
-            background: var(--Blue-500, #00a1f2);
-        }
-
-        .btn-danger:hover {
-            background-color: #cc0000;
-        }
-
-        .btn-primary:hover {
-            background-color: #08c;
-        }
-
-        form#loginForm .buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        h5.card-title {
-            font-size: 22px;
-            text-align: center;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        select {
-            background-color: rgb(255, 255, 255);
-            background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/PgoKCjwhLS0gTGljZW5zZTogUEQuIE1hZGUgYnkgaWNvbnM4OiBodHRwczovL2dpdGh1Yi5jb20vaWNvbnM4L3dpbmRvd3MtMTAtaWNvbnMgLS0+CjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgCgkgdmlld0JveD0iMCAwIDMyIDMyIiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHBvbHlsaW5lIHN0eWxlPSJmaWxsOm5vbmU7c3Ryb2tlOiMwMDAwMDA7c3Ryb2tlLXdpZHRoOjI7c3Ryb2tlLW1pdGVybGltaXQ6MTA7IiBwb2ludHM9IjI4LjUsMTEuNSAxNiwyNCAzLjUsMTEuNSAiLz4KPC9zdmc+);
-            background-repeat: no-repeat;
-            background-size: 16px 12px;
-            appearance: none;
-            background-position: right 0.75rem center;
-        }
-
-        .logo {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-
-        .logo img {
-            height: 55px;
-        }
-
-        @media screen and (max-width: 767px) {
-            .inputs-wrapper {
-                grid-template-columns: 1fr;
-            }
-
-            input,
-            select {
-                padding: 7px 14px;
-            }
-
-            label {
-                font-size: 14px;
-            }
-
-            .btn {
-                min-width: 130px;
-                height: 38px;
-                font-size: 15px;
-            }
-
-            form#loginForm {
-                padding: 40px 15px 30px;
-            }
-        }
+      .card {
+        padding: 24px
       }
 
-      @media (prefers-color-scheme: dark) {
-        body {
-          background-color: #01102b;
-        }
-        body form#loginForm {
-          background-color: #001222;
-          border: 1px solid #4d6680;
-        }
-        body label {
-          color: #fff;
-        }
-        body input,
-        body select {
-          background-color: transparent !important;
-          color: #fff;
-        }
-        select {
-          color: #fff;
-          background-color: #111;
-
-          background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.487 4.484-4.487L15.484 8.5 10 14l-5.484-5.5z'/></svg>");
-        }
+      .role-selector {
+        grid-template-columns: 1fr
       }
-    </style>
-    <!-- Immediate script to preserve query parameters before any redirects -->
-    <script>
-        (function() {
-            'use strict';
-            // CRITICAL: This MUST run before ANY other script, including config.js
-            // Store in a way that survives page reloads
-            try {
-                const currentUrl = window.location.href;
-                const urlObj = new URL(currentUrl);
-                const urlParams = urlObj.searchParams;
-                const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                
-                // Check if this is a Keycloak redirect (has auth response in hash or query)
-                const isKeycloakRedirect = hashParams.has('state') || hashParams.has('code') || 
-                                          urlParams.has('state') || urlParams.has('code') ||
-                                          urlParams.has('session_state') || urlParams.has('iss');
-                
-                if (isKeycloakRedirect) {
-                    // This is a Keycloak redirect - restore our original query params
-                    const storedParams = sessionStorage.getItem('pnm_query_params');
-                    if (storedParams) {
-                        const stored = new URLSearchParams(storedParams);
-                        // Merge stored params with current URL (don't overwrite Keycloak params)
-                        stored.forEach((value, key) => {
-                            if (!urlParams.has(key)) {
-                                urlParams.set(key, value);
-                            }
-                        });
-                        urlObj.search = urlParams.toString();
-                        window.history.replaceState({}, '', urlObj.toString());
-                        // Restored query params after Keycloak redirect
-                    }
-                } else {
-                    // Not a Keycloak redirect - check if we have custom query params to store
-                    const customParams = new URLSearchParams();
-                    urlParams.forEach((value, key) => {
-                        // Only store non-Keycloak params
-                        if (!['state', 'code', 'session_state', 'iss', 'error'].includes(key)) {
-                            customParams.set(key, value);
-                        }
-                    });
-                    
-                    if (customParams.toString()) {
-                        // Store custom query parameters IMMEDIATELY
-                        sessionStorage.setItem('pnm_query_params', customParams.toString());
-                        sessionStorage.setItem('pnm_original_url', currentUrl);
-                        // Stored query params for preservation
-                        
-                        // Also store in a way that's accessible immediately
-                        window._pnmStoredParams = customParams.toString();
-                    } else {
-                        // No custom params - try to restore from storage
-                        const storedParams = sessionStorage.getItem('pnm_query_params') || window._pnmStoredParams;
-                        if (storedParams) {
-                            const stored = new URLSearchParams(storedParams);
-                            stored.forEach((value, key) => {
-                                if (!urlParams.has(key)) {
-                                    urlParams.set(key, value);
-                                }
-                            });
-                            urlObj.search = urlParams.toString();
-                            window.history.replaceState({}, '', urlObj.toString());
-                            // Restored query params from storage
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error('[Immediate] Error preserving query params:', e);
-            }
-        })();
-    </script>
+    }
+
+    @media(prefers-color-scheme:dark) {
+      body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)
+      }
+
+      .card {
+        background: #1e1e2e;
+        border: 1px solid #333
+      }
+
+      label,
+      input {
+        color: #fff
+      }
+
+      input {
+        background: #2a2a3a;
+        border-color: #444
+      }
+
+      .role-btn {
+        background: #2a2a3a;
+        border-color: #444;
+        color: #ccc
+      }
+
+      .role-btn:hover {
+        border-color: #00a1f2
+      }
+
+      .status-info {
+        background: #1a2a3a;
+        color: #7cb3f0
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
+  <div class="container">
     <div class="logo">
-        <img src="./assets/imgs/main-logo-light.png" alt="main-logo"/>
+      <img src="./assets/imgs/main-logo-light.png" />
     </div>
-    <div class="form">
-        <!-- Keycloak Login Button (shown when not authenticated) -->
-        <div id="keycloak-login-container" style="display: none;">
-            <button id="keycloak-login-btn" class="btn btn-primary" style="width: 100%; height: 50px; font-size: 18px;">
-                Login with Keycloak
-            </button>
+
+    <div class="card">
+      <h1 class="card-title">Join Meeting</h1>
+      <p class="card-subtitle">Enter room code and choose your role</p>
+
+      <!-- Status messages -->
+      <div id="status-message" class="status-info" style="display:none"></div>
+
+      <!-- Room input (always visible) -->
+      <div class="input-group">
+        <label for="room_id">Room Code *</label>
+        <input type="text" id="room_id" placeholder="Enter room code" autocomplete="off" required />
+        <div class="error-text" id="room-error"></div>
+      </div>
+
+      <!-- Role selection -->
+      <div class="role-selector">
+        <button type="button" class="role-btn active" id="role-participant" data-role="participant">
+          👤 Participant
+        </button>
+        <button type="button" class="role-btn" id="role-admin" data-role="admin">
+          🔐 Administrator
+        </button>
+      </div>
+
+      <!-- Participant form -->
+      <div id="participant-section">
+        <div class="input-group">
+          <label for="name">Your Name *</label>
+          <input type="text" id="name" placeholder="Enter your name" autocomplete="name" required />
+          <div class="error-text" id="name-error"></div>
         </div>
-        
-        <!-- Room Code Form (shown after Keycloak authentication if no room_id in URL) -->
-        <form action="#" method="POST" id="loginForm" style="display: none;">
-            <div class="inputs-wrapper single-column">
-                <div class="item">
-                    <label for="room_id" class="form-label">Room Code</label>
-                    <input
-                            type="text"
-                            name="room_id"
-                            id="room_id"
-                            placeholder="Enter room code"
-                            required
-                            class="form-control"
-                            autocomplete="off"
-                    />
-                </div>
-                <div class="item select-wrap">
-                    <label for="user_type" class="form-label">User type</label>
-                    <select class="form-select" id="user_type" name="user_type">
-                        <option value="participant" selected>Participant</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-            </div>
-            <div class="buttons">
-                <button class="btn btn-primary" type="submit">Join Room</button>
-                <button class="btn btn-danger" type="button" id="logout-btn">Logout</button>
-            </div>
-        </form>
-        
-        <!-- Hidden fields for API calls -->
-        <input type="hidden" id="api_key" name="api_key" value="">
-        <input type="hidden" id="api_secret" name="api_secret" value="">
-        <input type="hidden" id="name" name="name" value="">
-        <input type="hidden" id="user_id" name="user_id" value="">
+        <button type="button" id="join-btn" class="btn-primary">Join as Participant</button>
+      </div>
+
+      <!-- Admin section -->
+      <div id="admin-section" style="display:none">
+        <div id="admin-logged-out">
+          <div class="status-info">
+            <strong>Administrator Access</strong>
+            Login with Keycloak to join as an administrator with full meeting controls.
+          </div>
+          <button type="button" id="keycloak-login-btn" class="btn-primary">Login with Keycloak</button>
+        </div>
+        <div id="admin-logged-in" style="display:none">
+          <div class="status-info success">
+            <strong>✓ You are logged in</strong>
+            <span id="admin-user-name"></span>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button type="button" id="keycloak-logout-btn" class="btn-danger" style="flex:1">Logout</button>
+            <button type="button" id="keycloak-continue-btn" class="btn-primary" style="flex:2">Continue to
+              Room</button>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<script type="text/javascript">
-    const loginForm = document.getElementById('loginForm');
-    let API_KEY, API_SECRET;
-    let keycloak = null;
-    let isKeycloakEnabled = false;
-    const toUrl = window.location.href.replace(/\/login.*$/i, '');
+  <script>
+    (() => {
+      'use strict';
 
-    // SessionStorage keys for preserving query parameters
-    const STORAGE_KEY_QUERY_PARAMS = 'pnm_query_params';
-    const STORAGE_KEY_ORIGINAL_URL = 'pnm_original_url';
+      /* ================= CONFIG ================= */
+      const IGNORE_PARAMS = ['state', 'code', 'session_state', 'iss', 'error'];
+      const STORAGE_KEY = 'pnm_query_params';
 
-    // Get room_id from URL parameters
-    function getRoomIdFromUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        return urlParams.get('room_id') || hashParams.get('room_id') || null;
-    }
+      const el = {
+        room: document.getElementById('room_id'),
+        name: document.getElementById('name'),
+        roleParticipant: document.getElementById('role-participant'),
+        roleAdmin: document.getElementById('role-admin'),
+        participantSection: document.getElementById('participant-section'),
+        adminSection: document.getElementById('admin-section'),
+        adminLoggedOut: document.getElementById('admin-logged-out'),
+        adminLoggedIn: document.getElementById('admin-logged-in'),
+        adminUserName: document.getElementById('admin-user-name'),
+        joinBtn: document.getElementById('join-btn'),
+        keycloakLoginBtn: document.getElementById('keycloak-login-btn'),
+        keycloakLogoutBtn: document.getElementById('keycloak-logout-btn'),
+        keycloakContinueBtn: document.getElementById('keycloak-continue-btn'),
+        statusMessage: document.getElementById('status-message'),
+        roomError: document.getElementById('room-error'),
+        nameError: document.getElementById('name-error')
+      };
 
-    // Generate invite link for a room
-    function generateInviteLink(roomId, isAdmin = false) {
-        const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/login.html');
-        let link = `${baseUrl}?room_id=${encodeURIComponent(roomId)}`;
-        if (isAdmin) {
-            link += '&joinasadmin';
-        }
-        return link;
-    }
+      let currentRole = 'participant';
+      let keycloak = null;
+      const kcCfg = window.plugNmeetConfig?.keycloak;
+      const kcEnabled = kcCfg?.enabled;
 
-    // Show invite link section
-    function showInviteLink(inviteLink) {
-        // Create invite section if it doesn't exist
-        let inviteSection = document.getElementById('invite-link-section');
-        if (!inviteSection) {
-            const form = document.getElementById('loginForm');
-            if (form) {
-                inviteSection = document.createElement('div');
-                inviteSection.id = 'invite-link-section';
-                inviteSection.className = 'item';
-                inviteSection.innerHTML = `
-                    <label for="invite_link" class="form-label">Invite Link</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input
-                                type="text"
-                                id="invite_link"
-                                readonly
-                                class="form-control"
-                                style="flex: 1;"
-                        />
-                        <button type="button" class="btn btn-primary" id="copy-invite-btn" style="min-width: 100px;">
-                            Copy Link
-                        </button>
-                    </div>
-                    <small style="color: #666; margin-top: 5px; display: block;">
-                        Share this link with participants to join the room
-                    </small>
-                `;
-                form.querySelector('.inputs-wrapper').appendChild(inviteSection);
-            }
-        }
-        
-        const inviteInput = document.getElementById('invite_link');
-        if (inviteInput) {
-            inviteInput.value = inviteLink;
-            inviteSection.style.display = 'block';
-            
-            // Setup copy button
-            const copyBtn = document.getElementById('copy-invite-btn');
-            if (copyBtn) {
-                copyBtn.onclick = () => {
-                    inviteInput.select();
-                    inviteInput.setSelectionRange(0, 99999); // For mobile devices
-                    document.execCommand('copy');
-                    
-                    // Visual feedback
-                    const originalText = copyBtn.textContent;
-                    copyBtn.textContent = 'Copied!';
-                    copyBtn.style.backgroundColor = '#28a745';
-                    
-                    setTimeout(() => {
-                        copyBtn.textContent = originalText;
-                        copyBtn.style.backgroundColor = '';
-                    }, 2000);
-                };
-            }
-        }
-    }
+      /* ================= UTILITIES ================= */
+      const params = () => new URLSearchParams(location.search);
+      const showError = (element, message) => {
+        element.textContent = message;
+        element.style.display = 'block';
+      };
+      const hideError = (element) => {
+        element.style.display = 'none';
+      };
+      const showStatus = (message, type = 'info') => {
+        el.statusMessage.textContent = message;
+        el.statusMessage.className = `status-info ${type}`;
+        el.statusMessage.style.display = 'block';
+        setTimeout(() => el.statusMessage.style.display = 'none', 5000);
+      };
+      const setLoading = (loading) => {
+        document.body.classList.toggle('loading', loading);
+      };
 
-    // Check if joinasadmin parameter is present in URL
-    function checkJoinAsAdmin() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        // Check both query params and hash params
-        const hasJoinAsAdmin = urlParams.has('joinasadmin') || hashParams.has('joinasadmin');
-        // Check if joinasadmin parameter is present
-        return hasJoinAsAdmin;
-    }
-
-    // Store query parameters in sessionStorage
-    function storeQueryParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const customParams = new URLSearchParams();
-        
-        // Only store non-Keycloak params
-        urlParams.forEach((value, key) => {
-            if (!['state', 'code', 'session_state', 'iss', 'error'].includes(key)) {
-                customParams.set(key, value);
-            }
+      /* ================= QUERY PARAMS ================= */
+      function persistParams() {
+        const p = params();
+        IGNORE_PARAMS.forEach(k => p.delete(k));
+        if (p.toString()) sessionStorage.setItem(STORAGE_KEY, p.toString());
+      }
+      function restoreParams() {
+        const saved = sessionStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const url = new URL(location.href);
+        new URLSearchParams(saved).forEach((v, k) => {
+          if (!url.searchParams.has(k)) url.searchParams.set(k, v);
         });
-        
-        if (customParams.toString()) {
-            sessionStorage.setItem(STORAGE_KEY_QUERY_PARAMS, customParams.toString());
-            sessionStorage.setItem(STORAGE_KEY_ORIGINAL_URL, window.location.href);
-            // Stored query params in sessionStorage
-        }
-    }
+        history.replaceState({}, '', url);
+      }
+      restoreParams();
 
-    // Restore query parameters from sessionStorage if they were lost
-    function restoreQueryParams() {
-        const currentParams = new URLSearchParams(window.location.search);
-        const storedParams = sessionStorage.getItem(STORAGE_KEY_QUERY_PARAMS);
-        
-        // Check if we have Keycloak auth params (means we just came back from Keycloak)
-        const hasKeycloakParams = currentParams.has('state') || currentParams.has('code') || 
-                                   currentParams.has('session_state') ||
-                                   window.location.hash.includes('state=') || 
-                                   window.location.hash.includes('code=');
-        
-        // If we have stored params and either no current params OR we have Keycloak params, restore
-        if (storedParams && (!currentParams.toString() || hasKeycloakParams)) {
-            const url = new URL(window.location.href);
-            const stored = new URLSearchParams(storedParams);
-            
-            // Restore all stored parameters (don't overwrite Keycloak params)
-            stored.forEach((value, key) => {
-                if (!currentParams.has(key)) {
-                    url.searchParams.set(key, value);
-                }
-            });
-            
-            // Update URL without page reload
-            window.history.replaceState({}, '', url.toString());
-            // Restored query params from sessionStorage
-            
-            // Don't clear stored params yet - keep them for the next page load if needed
-            return true;
-        }
-        return false;
-    }
+      /* ================= KEYCLOAK ================= */
+      async function initKeycloak() {
+        if (!kcEnabled) return false;
+        persistParams();
 
-    // Preserve all query parameters in a URL
-    function preserveQueryParams(baseUrl) {
-        const targetUrl = new URL(baseUrl);
-        
-        // First, try to get params from current URL (excluding Keycloak params)
-        const currentUrl = new URL(window.location.href);
-        const currentParams = currentUrl.searchParams;
-        const customParams = new URLSearchParams();
-        
-        currentParams.forEach((value, key) => {
-            // Only preserve non-Keycloak params
-            if (!['state', 'code', 'session_state', 'iss', 'error'].includes(key)) {
-                customParams.set(key, value);
-            }
-        });
-        
-        // If no params in current URL, try to restore from sessionStorage
-        if (!customParams.toString()) {
-            const storedParams = sessionStorage.getItem(STORAGE_KEY_QUERY_PARAMS);
-            if (storedParams) {
-                const stored = new URLSearchParams(storedParams);
-                stored.forEach((value, key) => {
-                    customParams.set(key, value);
-                });
-            }
-        }
-        
-        // Copy all custom query parameters to target URL
-        customParams.forEach((value, key) => {
-            targetUrl.searchParams.set(key, value);
-        });
-        
-        return targetUrl.toString();
-    }
-
-    // Get redirect URI with preserved query parameters
-    function getRedirectUriWithParams() {
-        const keycloakConfig = window.plugNmeetConfig?.keycloak;
-        let baseRedirectUri = keycloakConfig?.redirectUri || window.location.origin + window.location.pathname;
-        
-        // Ensure baseRedirectUri doesn't have query params (we'll add them)
-        const baseUrl = new URL(baseRedirectUri);
-        baseUrl.search = ''; // Clear any existing query params
-        baseRedirectUri = baseUrl.toString();
-        
-        // Preserve all current query parameters
-        const redirectUri = preserveQueryParams(baseRedirectUri);
-        
-        // Build redirect URI with preserved query params
-        
-        return redirectUri;
-    }
-
-    // Restore query parameters immediately on page load (before any other code runs)
-    restoreQueryParams();
-
-    // Check if Keycloak is enabled
-    if (typeof window.plugNmeetConfig !== 'undefined' && 
-        window.plugNmeetConfig.keycloak && 
-        window.plugNmeetConfig.keycloak.enabled) {
-        isKeycloakEnabled = true;
-    }
-
-    // Load Keycloak library
-    async function loadKeycloakLibrary() {
-        // Check if already loaded
-        if (window.Keycloak) {
-            return window.Keycloak;
+        if (!window.Keycloak) {
+          await new Promise(r => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/keycloak-js@25.0.4/dist/keycloak.min.js';
+            s.onload = r;
+            document.head.appendChild(s);
+          });
         }
 
-        // Try to load from CDN
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/keycloak-js@25.0.4/dist/keycloak.min.js';
-            script.type = 'text/javascript';
-            script.onload = () => {
-                if (window.Keycloak) {
-                    resolve(window.Keycloak);
-                } else {
-                    reject(new Error('Keycloak not found on window object'));
-                }
-            };
-            script.onerror = () => {
-                reject(new Error('Failed to load Keycloak from CDN'));
-            };
-            document.head.appendChild(script);
-        });
-    }
+        keycloak = new Keycloak(kcCfg);
+        const ok = await keycloak.init({ onLoad: 'check-sso', checkLoginIframe: false });
+        restoreParams();
+        return ok;
+      }
 
-    // Initialize Keycloak if enabled
-    async function initKeycloak() {
-        if (!isKeycloakEnabled) {
-            return false;
+      async function loginKeycloak() {
+        persistParams();
+        await keycloak.login({ redirectUri: location.href });
+      }
+
+      async function logoutKeycloak() {
+        if (keycloak) await keycloak.logout();
+        location.reload();
+      }
+
+      /* ================= ROLE SELECTION ================= */
+      function switchRole(role) {
+        currentRole = role;
+        sessionStorage.setItem('pnm_selected_role', role);
+
+        el.roleParticipant.classList.toggle('active', role === 'participant');
+        el.roleAdmin.classList.toggle('active', role === 'admin');
+
+        el.participantSection.style.display = role === 'participant' ? 'block' : 'none';
+        el.adminSection.style.display = role === 'admin' ? 'block' : 'none';
+
+        if (role === 'admin') {
+          initAdminFlow();
         }
+      }
+
+      async function initAdminFlow() {
+        if (!await initKeycloak()) {
+          el.adminLoggedOut.style.display = 'block';
+          el.adminLoggedIn.style.display = 'none';
+          return;
+        }
+
+        const t = keycloak.tokenParsed || {};
+        const name = t.preferred_username || t.name ||
+          [t.given_name, t.family_name].filter(Boolean).join(' ') || 'Admin';
+
+        el.adminUserName.textContent = `as ${name}`;
+        el.adminLoggedOut.style.display = 'none';
+        el.adminLoggedIn.style.display = 'block';
+      }
+
+      /* ================= USER INFO ================= */
+      function getAdminUser() {
+        const t = keycloak.tokenParsed || {};
+        const name = t.preferred_username || t.name ||
+          [t.given_name, t.family_name].filter(Boolean).join(' ');
+        return { is_admin: true, name: name || 'admin', user_id: t.sub };
+      }
+
+      function getParticipantUser() {
+        const name = el.name.value.trim();
+        const userId = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+        return { is_admin: false, name: name, user_id: userId };
+      }
+
+      /* ================= VALIDATION ================= */
+      function validateForm() {
+        let valid = true;
+
+        if (!el.room.value.trim()) {
+          showError(el.roomError, 'Room code is required');
+          valid = false;
+        } else {
+          hideError(el.roomError);
+        }
+
+        if (currentRole === 'participant' && !el.name.value.trim()) {
+          showError(el.nameError, 'Name is required');
+          valid = false;
+        } else {
+          hideError(el.nameError);
+        }
+
+        return valid;
+      }
+
+      /* ================= JOIN ROOM ================= */
+      async function joinRoom(roomId, user) {
+        if (!validateForm()) return;
+
+        setLoading(true);
+        showStatus('Connecting to room...', 'info');
 
         try {
-            // Load Keycloak library
-            const KeycloakClass = await loadKeycloakLibrary();
+          const server = window.plugNmeetConfig.serverUrl;
+          const headers = { 'Content-Type': 'application/json' };
 
-            const keycloakConfig = window.plugNmeetConfig.keycloak;
-            keycloak = new KeycloakClass({
-                url: keycloakConfig.url,
-                realm: keycloakConfig.realm,
-                clientId: keycloakConfig.clientId,
+          let authPath = '/participant-auth/auth/';
+          if (user.is_admin) {
+            await keycloak.updateToken(30);
+            headers.Authorization = 'Bearer ' + keycloak.token;
+            authPath = '/keycloak-auth/auth/';
+          }
+
+          const post = (m, b) => fetch(server + authPath + m, {
+            method: 'POST', headers, body: JSON.stringify(b)
+          }).then(r => r.json());
+
+          const active = await post('room/isRoomActive', { room_id: roomId });
+          if (!active.is_active) {
+            await post('room/create', {
+              room_id: roomId,
+              empty_timeout: 7200,
+              metadata: window.DEFAULT_ROOM_METADATA
             });
+          }
 
-            // Store query parameters before Keycloak initialization (in case of redirect)
-            storeQueryParams();
-            
-            // Store query parameters before Keycloak initialization
-            storeQueryParams();
-            
-            // Build redirect URI with all current query parameters preserved
-            const redirectUri = getRedirectUriWithParams();
-            // Keycloak init with preserved query params in redirect URI
-
-            // Initialize Keycloak with redirect URI that includes query parameters
-            const authenticated = await keycloak.init({
-                onLoad: 'check-sso',
-                redirectUri: redirectUri,
-                checkLoginIframe: false,
-            });
-            
-            // After initialization, restore params if they were lost during redirect
-            restoreQueryParams();
-
-            if (authenticated) {
-                // User is authenticated, extract user info
-                await handleKeycloakAuth();
-            } else {
-                // User not authenticated, show login button or redirect
-                showKeycloakLogin();
-            }
-
-            return authenticated;
+          const join = await post('room/getJoinToken', { room_id: roomId, user_info: user });
+          location.href = '/?access_token=' + join.token;
         } catch (error) {
-            console.error('Keycloak initialization failed:', error);
-            alert('Keycloak authentication failed. Please check your configuration. Error: ' + error.message);
-            // Fallback to API key/secret form
-            showApiKeyForm();
-            return false;
+          setLoading(false);
+          showStatus('Failed to join room. Please try again.', 'error');
+          console.error('Join error:', error);
         }
-    }
+      }
 
-    function showKeycloakLogin() {
-        // Hide the form
-        const form = document.getElementById('loginForm');
-        if (form) form.style.display = 'none';
-        
-        // Show Keycloak login button
-        const loginContainer = document.getElementById('keycloak-login-container');
-        const loginBtn = document.getElementById('keycloak-login-btn');
-        if (loginContainer) loginContainer.style.display = 'block';
-        if (loginBtn && keycloak) {
-            loginBtn.onclick = () => {
-                // Store query parameters before redirect
-                storeQueryParams();
-                
-                // Preserve query parameters when redirecting to Keycloak login
-                const redirectUri = getRedirectUriWithParams();
-                // Keycloak login with preserved query params
-                
-                // Call login with redirect URI that includes query parameters
-                try {
-                    keycloak.login({
-                        redirectUri: redirectUri
-                    });
-                } catch (error) {
-                    console.error('Keycloak login error:', error);
-                    // Fallback: try without redirectUri option
-                    keycloak.login();
-                }
-            };
-        }
-    }
+      /* ================= EVENT HANDLERS ================= */
+      el.roleParticipant.onclick = () => switchRole('participant');
+      el.roleAdmin.onclick = () => switchRole('admin');
+      el.joinBtn.onclick = () => {
+        const room = el.room.value.trim();
+        if (!room) return;
+        joinRoom(room, getParticipantUser());
+      };
+      el.keycloakLoginBtn.onclick = loginKeycloak;
+      el.keycloakLogoutBtn.onclick = logoutKeycloak;
+      el.keycloakContinueBtn.onclick = () => {
+        const room = el.room.value.trim();
+        if (!room) return;
+        joinRoom(room, getAdminUser());
+      };
 
-    function showApiKeyForm() {
-        // Show API key/secret fields (fallback mode)
-        const apiKeyItem = document.getElementById('api_key_item');
-        const apiSecretItem = document.getElementById('api_secret_item');
-        if (apiKeyItem) apiKeyItem.style.display = 'block';
-        if (apiSecretItem) apiSecretItem.style.display = 'block';
-        
-        // Show name and user_id fields
-        const nameItem = document.getElementById('name_item');
-        const userIdItem = document.getElementById('user_id_item');
-        if (nameItem) nameItem.style.display = 'block';
-        if (userIdItem) userIdItem.style.display = 'block';
-        
-        // Show the form
-        const form = document.getElementById('loginForm');
-        if (form) form.style.display = 'block';
-        
-        // Make fields required
-        const apiKey = document.getElementById('api_key');
-        const apiSecret = document.getElementById('api_secret');
-        const name = document.getElementById('name');
-        const userId = document.getElementById('user_id');
-        if (apiKey) apiKey.required = true;
-        if (apiSecret) apiSecret.required = true;
-        if (name) name.required = true;
-        if (userId) userId.required = true;
-        
-        isKeycloakEnabled = false;
-    }
+      /* ================= INITIALIZE ================= */
+      async function start() {
+        const room = params().get('room_id');
+        const name = params().get('name');
+        const isAdminParam = params().has('joinasadmin');
 
-    async function handleKeycloakAuth() {
-        if (!keycloak || !keycloak.authenticated) {
-            return;
+        // Pre-fill from URL
+        if (room) el.room.value = room;
+        if (name) el.name.value = name;
+
+        // Auto-join if all params present
+        if (room && name && !isAdminParam) {
+          joinRoom(room, getParticipantUser());
+          return;
         }
 
-        // Extract user info from token
-        const token = keycloak.token;
-        const tokenParsed = keycloak.tokenParsed;
-        
-        // Update hidden form fields with user info from Keycloak
-        if (tokenParsed) {
-            const nameField = document.getElementById('name');
-            const userIdField = document.getElementById('user_id');
-            
-            // Use preferred_username, name, or sub from token
-            let userName = tokenParsed.preferred_username || 
-                          tokenParsed.name;
-            
-            if (!userName && (tokenParsed.given_name || tokenParsed.family_name)) {
-                userName = (tokenParsed.given_name || '') + ' ' + (tokenParsed.family_name || '');
-            }
-            
-            if (!userName) {
-                userName = tokenParsed.sub || 'user-' + Math.floor(Math.random() * 100);
-            }
-            
-            const userId = tokenParsed.sub || Date.now().toString();
-            
-            if (nameField) nameField.value = userName.trim();
-            if (userIdField) userIdField.value = userId;
+        // Admin flow from URL or Saved State
+        const savedRole = sessionStorage.getItem('pnm_selected_role');
+
+        if (isAdminParam || savedRole === 'admin') {
+          switchRole('admin');
+          if (room) el.room.value = room;
+          return;
         }
 
-        // Hide login button
-        const loginContainer = document.getElementById('keycloak-login-container');
-        if (loginContainer) loginContainer.style.display = 'none';
+        // Default: show participant form
+        switchRole('participant');
+      }
 
-        // Check if room_id is in URL
-        const roomIdFromUrl = getRoomIdFromUrl();
-        
-        if (roomIdFromUrl) {
-            // Auto-join room if room_id is in URL
-            // Check if joinasadmin is in URL - if so, force admin mode
-            const joinAsAdmin = checkJoinAsAdmin();
-            const userInfo = {
-                is_admin: joinAsAdmin || (document.getElementById('user_type')?.value === 'admin'),
-                name: document.getElementById('name')?.value || 'User',
-                user_id: document.getElementById('user_id')?.value || Date.now().toString(),
-            };
-            
-            // Auto-joining with user info
-            await joinRoom(roomIdFromUrl, userInfo);
-            
-            // Show invite link after successful join
-            const inviteLink = generateInviteLink(roomIdFromUrl, joinAsAdmin);
-            showInviteLink(inviteLink);
-        } else {
-            // Show room code input form
-            const form = document.getElementById('loginForm');
-            if (form) {
-                form.style.display = 'block';
-            }
-            
-            // If joinasadmin is in URL, set user type to admin
-            const joinAsAdmin = checkJoinAsAdmin();
-            if (joinAsAdmin) {
-                const userTypeSelect = document.getElementById('user_type');
-                if (userTypeSelect) {
-                    userTypeSelect.value = 'admin';
-                    // Set user_type to admin because joinasadmin is in URL
-                }
-            }
-            
-            // Setup logout button
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) {
-                logoutBtn.onclick = async () => {
-                    await keycloak.logout();
-                };
-            }
-        }
-
-        // Store token for API requests
-        window.keycloakToken = token;
-    }
-    
-    async function joinRoom(roomId, userInfo) {
-        const roomInfo = {
-            room_id: roomId,
-            empty_timeout: 60 * 60 * 2,
-            metadata: {
-                room_title: 'Meeting Room',
-                welcome_message: 'Welcome to plugNmeet!',
-                room_features: {
-                    allow_webcams: true,
-                    mute_on_start: false,
-                    allow_screen_share: true,
-                    allow_rtmp: true,
-                    admin_only_webcams: false,
-                    allow_view_other_webcams: true,
-                    allow_view_other_users_list: true,
-                    room_duration: 0,
-                    enable_analytics: true,
-                    allow_virtual_bg: true,
-                    allow_raise_hand: true,
-                    recording_features: {
-                        is_allow: true,
-                        is_allow_cloud: true,
-                        is_allow_local: true,
-                        enable_auto_cloud_recording: false,
-                        only_record_admin_webcams: false,
-                    },
-                    chat_features: {
-                        is_allow: true,
-                        is_allow_file_upload: true,
-                        max_file_size: 50,
-                        allowed_file_types: ['jpg', 'png', 'zip', 'pdf'],
-                    },
-                    shared_note_pad_features: {
-                        is_allow: true,
-                    },
-                    whiteboard_features: {
-                        is_allow: true,
-                    },
-                    external_media_player_features: {
-                        is_allow: true,
-                    },
-                    waiting_room_features: {
-                        is_active: true,
-                    },
-                    breakout_room_features: {
-                        is_allow: true,
-                        allowed_number_rooms: 6,
-                    },
-                    display_external_link_features: {
-                        is_allow: true,
-                    },
-                    ingress_features: {
-                        is_allow: true,
-                    },
-                    polls_features: {
-                        is_allow: true,
-                    },
-                    insights_features: {
-                        is_allow: true,
-                        transcription_features: {
-                            is_allow: true,
-                            is_allow_translation: true,
-                            is_allow_speech_synthesis: true,
-                        },
-                        chat_translation_features: {
-                            is_allow: true,
-                        },
-                        ai_features: {
-                            is_allow: true,
-                            ai_text_chat_features: {
-                                is_allow: true,
-                            },
-                            meeting_summarization_features: {
-                                is_allow: true,
-                            }
-                        },
-                    },
-                    end_to_end_encryption_features: {
-                        is_enabled: false,
-                        included_chat_messages: false,
-                        included_whiteboard: false,
-                        enabled_self_insert_encryption_key: false,
-                    },
-                },
-            },
-        };
-
-        await processRequest(roomInfo, userInfo);
-    }
-
-    // Initialize on page load
-    const joinAsAdmin = checkJoinAsAdmin();
-    const roomIdFromUrl = getRoomIdFromUrl();
-    
-    // Function to handle auto-join (called after all functions are defined)
-    function handleAutoJoin() {
-        if (roomIdFromUrl && !joinAsAdmin) {
-            // Auto-joining as participant (no joinasadmin parameter)
-            
-            // Hide form
-            const form = document.getElementById('loginForm');
-            if (form) form.style.display = 'none';
-            
-            // Hide Keycloak login button
-            const loginContainer = document.getElementById('keycloak-login-container');
-            if (loginContainer) loginContainer.style.display = 'none';
-            
-            // Set default values for participant
-            const userIdField = document.getElementById('user_id');
-            const nameField = document.getElementById('name');
-            
-            if (userIdField) userIdField.value = Date.now();
-            if (nameField) nameField.value = 'user-' + Math.floor(Math.random() * 100);
-            
-            // Auto-join as participant
-            const userInfo = {
-                is_admin: false,
-                name: document.getElementById('name')?.value || 'User',
-                user_id: document.getElementById('user_id')?.value || Date.now().toString(),
-            };
-            
-            // Auto-joining room as participant
-            joinRoom(roomIdFromUrl, userInfo).catch(err => {
-                console.error('Auto-join failed:', err);
-                alert('Failed to join room. Please try again.');
-                // Show form on error
-                if (form) form.style.display = 'block';
-            });
-            return true; // Indicate auto-join was triggered
-        }
-        return false; // No auto-join
-    }
-    
-    // Auto-join as participant if room_id exists but no joinasadmin
-    // We'll call handleAutoJoin at the end of the script after all functions are defined
-    const shouldAutoJoin = roomIdFromUrl && !joinAsAdmin;
-    if (shouldAutoJoin) {
-        // Hide form immediately
-        const form = document.getElementById('loginForm');
-        if (form) form.style.display = 'none';
-        
-        // Hide Keycloak login button
-        const loginContainer = document.getElementById('keycloak-login-container');
-        if (loginContainer) loginContainer.style.display = 'none';
-    }
-    
-    if (!shouldAutoJoin && isKeycloakEnabled) {
-        // Check if joinasadmin is present - if yes, require Keycloak; if no, allow participant join
-        if (joinAsAdmin) {
-            // Admin join requires Keycloak authentication
-            // Hide form initially when Keycloak is enabled
-            const form = document.getElementById('loginForm');
-            if (form) form.style.display = 'none';
-            
-            // Show login button container
-            const loginContainer = document.getElementById('keycloak-login-container');
-            if (loginContainer) loginContainer.style.display = 'block';
-            
-            initKeycloak().catch(err => {
-                console.error('Keycloak init error:', err);
-                alert('Keycloak authentication failed. Please refresh the page.');
-            });
-        } else {
-            // No joinasadmin and no room_id - show form for manual entry
-            // No joinasadmin parameter - showing form for participant join
-            
-            // Show form for participant join
-            const form = document.getElementById('loginForm');
-            if (form) form.style.display = 'block';
-            
-            // Hide Keycloak login button
-            const loginContainer = document.getElementById('keycloak-login-container');
-            if (loginContainer) loginContainer.style.display = 'none';
-            
-            // Set default values for participant mode
-            const userIdField = document.getElementById('user_id');
-            const nameField = document.getElementById('name');
-            const userTypeSelect = document.getElementById('user_type');
-            
-            if (userIdField) userIdField.value = Date.now();
-            if (nameField) nameField.value = 'user-' + Math.floor(Math.random() * 100);
-            if (userTypeSelect) userTypeSelect.value = 'participant'; // Force participant mode
-            
-            // Hide user type selector for participant joins (they're always participants)
-            if (userTypeSelect && userTypeSelect.parentElement) {
-                userTypeSelect.parentElement.style.display = 'none';
-            }
-        }
-    } else {
-        // Fallback: Show form if Keycloak is not enabled
-        const form = document.getElementById('loginForm');
-        if (form) form.style.display = 'block';
-        
-        // Set default values for non-Keycloak mode
-        const userIdField = document.getElementById('user_id');
-        const nameField = document.getElementById('name');
-        if (userIdField) userIdField.value = Date.now();
-        if (nameField) nameField.value = 'user-' + Math.floor(Math.random() * 100);
-    }
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Check if joinasadmin is present - only require Keycloak for admin joins
-            const joinAsAdmin = checkJoinAsAdmin();
-            
-            // If Keycloak is enabled AND joinasadmin is present, require Keycloak authentication
-            if (isKeycloakEnabled && joinAsAdmin) {
-                if (!keycloak || !keycloak.authenticated) {
-                    alert('Please login with Keycloak first');
-                    storeQueryParams();
-                    const redirectUri = getRedirectUriWithParams();
-                    await keycloak.login({ redirectUri: redirectUri });
-                    return;
-                }
-                
-                // Refresh token before proceeding
-                try {
-                    await keycloak.updateToken(30);
-                    window.keycloakToken = keycloak.token;
-                } catch (error) {
-                    console.error('Failed to refresh token:', error);
-                    storeQueryParams();
-                    const redirectUri = getRedirectUriWithParams();
-                    await keycloak.login({ redirectUri: redirectUri });
-                    return;
-                }
-            }
-            // If Keycloak is enabled but joinasadmin is NOT present, allow participant join without Keycloak
-            // (No Keycloak authentication required for participants)
-
-            const data = new FormData(e.target);
-            const roomId = data.get('room_id');
-            
-            if (!roomId) {
-                alert('Please enter a room code');
-                return;
-            }
-
-            // For participant joins (no joinasadmin), always set is_admin to false
-            // For admin joins (joinasadmin present), set is_admin based on joinasadmin or user_type
-            const userInfo = {
-                is_admin: joinAsAdmin ? (joinAsAdmin || (data.get('user_type') === 'admin')) : false,
-                name: document.getElementById('name')?.value || 'User',
-                user_id: document.getElementById('user_id')?.value || Date.now().toString(),
-            };
-
-            // Form submit with user info
-            await joinRoom(roomId, userInfo);
-            
-            // Show invite link after successful join
-            const inviteLink = generateInviteLink(roomId, joinAsAdmin);
-            showInviteLink(inviteLink);
-        });
-    }
-
-    processRequest = async (roomInfo, userInfo) => {
-        // let's check if room is active or not
-        const isRoomActiveReq = {
-            room_id: roomInfo.room_id,
-        };
-
-        const res = await sendRequest(isRoomActiveReq, 'room/isRoomActive');
-        if (!res.status) {
-            alert(res.msg);
-        }
-        let isRoomActive = res.is_active;
-
-        // if not active then we'll create
-        if (!isRoomActive) {
-            const roomCreateRes = await sendRequest(roomInfo, 'room/create');
-            if (!roomCreateRes.status) {
-                alert(roomCreateRes.msg);
-                return;
-            }
-            isRoomActive = roomCreateRes.status;
-        }
-
-        // if room active then we'll join
-        if (isRoomActive) {
-            const getJoinTokenReq = {
-                room_id: roomInfo.room_id,
-                user_info: userInfo,
-            };
-
-            const roomJoinRes = await sendRequest(
-                getJoinTokenReq,
-                'room/getJoinToken',
-            );
-
-            if (roomJoinRes.status) {
-                window.location.href =
-                    toUrl + '/?access_token=' + roomJoinRes.token;
-            } else {
-                alert(roomJoinRes.msg);
-            }
-        }
-    };
-
-    sendRequest = async (body, method) => {
-        const b = JSON.stringify(body);
-        let headers = {
-            'Content-Type': 'application/json',
-        };
-
-        // Check if joinasadmin is present - only require Keycloak for admin joins
-        const joinAsAdmin = checkJoinAsAdmin();
-        const requiresKeycloak = isKeycloakEnabled && joinAsAdmin;
-        
-        // Use Keycloak token for API authentication (only for admin joins)
-        if (requiresKeycloak && keycloak && keycloak.authenticated && keycloak.token) {
-            // Refresh token if needed
-            try {
-                const refreshed = await keycloak.updateToken(30); // Refresh if less than 30 seconds left
-                if (refreshed) {
-                    window.keycloakToken = keycloak.token;
-                }
-            } catch (error) {
-                console.error('Failed to refresh token:', error);
-                // Token refresh failed, try to re-authenticate
-                storeQueryParams();
-                const redirectUri = getRedirectUriWithParams();
-                await keycloak.login({ redirectUri: redirectUri });
-                return;
-            }
-
-            // Use Keycloak Bearer token for authentication
-            // The backend must be configured to accept Keycloak tokens
-            headers['Authorization'] = 'Bearer ' + keycloak.token;
-        } else if (requiresKeycloak) {
-            // Keycloak is required for admin joins but user not authenticated
-            alert('Please login with Keycloak first');
-            if (keycloak) {
-                storeQueryParams();
-                const redirectUri = getRedirectUriWithParams();
-                await keycloak.login({ redirectUri: redirectUri });
-            }
-            return { status: false, msg: 'Not authenticated' };
-        } else {
-            // For participant joins without Keycloak authentication
-            // Use regular /auth endpoint (not keycloak-auth) since we don't have a token
-            // The backend should handle API key/secret authentication directly
-            // Note: API credentials should be configured server-side or provided here
-            if (API_SECRET && API_KEY) {
-                // Use API key/secret authentication if available
-                const signature = await getHashSignature(API_SECRET, b);
-                headers['API-KEY'] = API_KEY;
-                headers['HASH-SIGNATURE'] = signature;
-            } else {
-                // API credentials not available - this should be handled server-side
-                // For now, log a warning but proceed (backend may have default credentials)
-                console.warn('API credentials not available for participant join - backend should handle authentication');
-            }
-        }
-
-        let serverUrl = window.PLUG_N_MEET_SERVER_URL;
-        if (typeof window.plugNmeetConfig !== "undefined"){
-            serverUrl = window.plugNmeetConfig.serverUrl
-        }
-
-        // Determine which endpoint to use
-        let authPath = '/auth/' + method;
-        if (requiresKeycloak && keycloak && keycloak.authenticated) {
-            // Admin joins with Keycloak token - use keycloak-auth endpoint
-            authPath = '/keycloak-auth/auth/' + method;
-        } else if (isKeycloakEnabled && !joinAsAdmin) {
-            // Participant joins (Keycloak enabled but no joinasadmin) - use participant-auth endpoint
-            // This endpoint injects API credentials server-side without requiring Keycloak token
-            authPath = '/participant-auth/auth/' + method;
-        } else {
-            // Keycloak disabled - use regular /auth endpoint
-            // This endpoint should handle API key/secret authentication
-            authPath = '/auth/' + method;
-        }
-
-        const response = await fetch(
-            serverUrl + authPath,
-            {
-                method: 'POST',
-                headers: headers,
-                body: b,
-            },
-        );
-
-        if (response.status !== 200) {
-            const errorText = response.statusText;
-            let errorMsg = errorText;
-            try {
-                const errorJson = await response.json();
-                errorMsg = errorJson.msg || errorText;
-            } catch (e) {
-                // Ignore JSON parse errors
-            }
-            alert(errorMsg);
-            return { status: false, msg: errorMsg };
-        }
-
-        return await response.json();
-    };
-
-    // copied from https://stackoverflow.com/a/76117805/1281864
-    const getHashSignature = async (
-        secretKey,
-        message,
-        algorithm = 'SHA-256',
-    ) => {
-        // Convert the message and secretKey to Uint8Array
-        const encoder = new TextEncoder();
-        const messageUint8Array = encoder.encode(message);
-        const keyUint8Array = encoder.encode(secretKey);
-
-        // Import the secretKey as a CryptoKey
-        const cryptoKey = await window.crypto.subtle.importKey(
-            'raw',
-            keyUint8Array,
-            {name: 'HMAC', hash: algorithm},
-            false,
-            ['sign'],
-        );
-
-        // Sign the message with HMAC and the CryptoKey
-        const signature = await window.crypto.subtle.sign(
-            'HMAC',
-            cryptoKey,
-            messageUint8Array,
-        );
-
-        // Convert the signature ArrayBuffer to a hex string
-        const hashArray = Array.from(new Uint8Array(signature));
-        return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-    };
-    
-    // Call handleAutoJoin after all functions are defined
-    if (typeof handleAutoJoin === 'function') {
-        handleAutoJoin();
-    }
-</script>
+      start();
+    })();
+  </script>
 </body>
+
 </html>
