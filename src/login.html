@@ -494,19 +494,50 @@
             const s = document.createElement('script');
             s.src = 'https://cdn.jsdelivr.net/npm/keycloak-js@25.0.4/dist/keycloak.min.js';
             s.onload = r;
+            s.onerror = () => {
+              console.error('Failed to load local Keycloak script, falling back to CDN');
+              s.src = 'https://cdn.jsdelivr.net/npm/keycloak-js@25.0.4/dist/keycloak.min.js';
+            };
             document.head.appendChild(s);
           });
         }
 
         keycloak = new Keycloak(kcCfg);
-        const ok = await keycloak.init({
-          onLoad: 'check-sso',
-          silentCheckSsoRedirectUri:
-            window.location.origin + '/silent-check-sso.html',
-          pkceMethod: 'S256',
-          checkLoginIframe: false,
-          enableLogging: false // Set to true for debugging
-        });
+
+        // Initialize Keycloak with check-sso (without silent SSO redirect URI)
+        // If silent-check-sso.html is not configured in Keycloak, it will fail
+        // So we use regular check-sso which works without the redirect URI
+        let ok = false;
+        try {
+          const initPromise = keycloak.init({
+            // onLoad: 'check-sso', // Manual check implemented in start()
+            pkceMethod: 'S256',
+            enableLogging: false, // Set to true for debugging
+            checkLoginIframe: false
+          });
+
+          // Add timeout (5 seconds) - if init hangs, treat as failed
+          const timeoutPromise = new Promise((resolve) => {
+            setTimeout(() => resolve(false), 5000);
+          });
+
+          ok = await Promise.race([initPromise, timeoutPromise]);
+        } catch (err) {
+          // If init fails, continue without SSO - user can manually log in
+          console.warn('Keycloak init failed:', err.message);
+          ok = false;
+          // Keycloak instance still exists, just not authenticated
+          // This allows manual login later
+        }
+
+        // Clean up OAuth params from hash after processing (if any)
+        const hash = window.location.hash.substring(1);
+        if (hash.includes('code=') || hash.includes('state=')) {
+          const url = new URL(location.href);
+          url.hash = ''; // Remove hash after Keycloak processes it
+          history.replaceState({}, '', url);
+        }
+
         restoreParams();
         return ok;
       }
@@ -533,7 +564,7 @@
         // Preserve all query params in redirect URI
         const redirectUri = new URL(location.href);
         IGNORE_PARAMS.forEach(k => redirectUri.searchParams.delete(k));
-        
+
         // Don't use prompt parameter - let Keycloak handle SSO automatically
         // If user is already logged in, it will use SSO silently
         // If not logged in, it will show login screen
@@ -548,9 +579,9 @@
       }
 
       /* ================= ROLE SELECTION ================= */
-      function switchRole(role) {
+      async function switchRole(role) {
         currentRole = role;
-        
+
         // Update URL with role parameter instead of sessionStorage
         const url = new URL(location.href);
         if (role === 'admin') {
@@ -567,29 +598,80 @@
         el.adminSection.style.display = role === 'admin' ? 'block' : 'none';
 
         if (role === 'admin') {
-          initAdminFlow();
+          await initAdminFlow();
         }
       }
 
       async function initAdminFlow() {
-        const authenticated = await initKeycloak();
+        // Always start by hiding both sections to prevent both showing
+        el.adminLoggedOut.style.display = 'none';
+        el.adminLoggedIn.style.display = 'none';
 
-        if (!authenticated) {
+        // Check if we're processing an OAuth callback (prevent loops)
+        const hash = window.location.hash.substring(1);
+        const hasOAuthCallback = hash.includes('code=') || hash.includes('state=');
+
+        // Initialize Keycloak if not already initialized
+        if (!keycloak) {
+          try {
+            const initResult = await initKeycloak();
+            // If Keycloak is not enabled, show login button
+            if (!kcEnabled) {
+              el.adminLoggedOut.style.display = 'block';
+              return;
+            }
+            // If keycloak instance was not created, show login button
+            if (!keycloak) {
+              el.adminLoggedOut.style.display = 'block';
+              return;
+            }
+            // If init failed but keycloak exists, continue to check authentication
+            // (user can still manually log in)
+          } catch (err) {
+            // If initialization throws an error, show login button
+            console.warn('Keycloak initialization error:', err);
+            el.adminLoggedOut.style.display = 'block';
+            return;
+          }
+        }
+
+        // Ensure keycloak exists before checking authentication
+        if (!keycloak) {
           el.adminLoggedOut.style.display = 'block';
-          el.adminLoggedIn.style.display = 'none';
           return;
         }
 
-        const t = keycloak.tokenParsed || {};
-        const name =
-          t.preferred_username ||
-          t.name ||
-          [t.given_name, t.family_name].filter(Boolean).join(' ') ||
-          'Admin';
+        // If we have OAuth callback, wait for it to be processed
+        if (hasOAuthCallback) {
+          // Wait for Keycloak to process the OAuth callback
+          // Poll for authentication status (max 2 seconds)
+          let attempts = 0;
+          while (attempts < 20 && !keycloak.authenticated) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+        }
 
-        el.adminUserName.textContent = `as ${name}`;
-        el.adminLoggedOut.style.display = 'none';
-        el.adminLoggedIn.style.display = 'block';
+        // Check if user is already authenticated
+        // keycloak.authenticated is explicitly true when logged in, false or undefined when not
+        const isAuthenticated = keycloak && keycloak.authenticated === true;
+
+        if (isAuthenticated) {
+          const t = keycloak.tokenParsed || {};
+          const name =
+            t.preferred_username ||
+            t.name ||
+            [t.given_name, t.family_name].filter(Boolean).join(' ') ||
+            'Admin';
+
+          el.adminUserName.textContent = `as ${name}`;
+          el.adminLoggedIn.style.display = 'block';
+        } else {
+          // User is not authenticated - show login button
+          // BUT: Don't auto-trigger login if we just processed an OAuth callback
+          // (this prevents redirect loops)
+          el.adminLoggedOut.style.display = 'block';
+        }
       }
 
       /* ================= USER INFO ================= */
@@ -715,10 +797,42 @@
           return;
         }
 
+        // Check for existing Keycloak session first
+        if (kcEnabled) {
+          try {
+            await initKeycloak();
+            // init() with pkce will handle the code exchange if coming back from login
+            if (keycloak && keycloak.authenticated) {
+              await switchRole('admin');
+              return;
+            }
+
+            // Manual check-sso with clean URL (strip query params)
+            // This prevents "Invalid parameter: redirect_uri" if params aren't whitelisted
+            const ssoChecked = sessionStorage.getItem('pnm_sso_checked');
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasError = urlParams.has('error');
+
+            if (!ssoChecked && !hasError) {
+              sessionStorage.setItem('pnm_sso_checked', '1');
+              const cleanUri = window.location.origin + window.location.pathname;
+              console.log('Checking session with clean URI:', cleanUri);
+              await keycloak.login({
+                prompt: 'none',
+                redirectUri: cleanUri
+              });
+              return;
+            }
+          } catch (e) {
+            console.warn('Manual session check failed', e);
+          }
+        }
+
         // Admin flow from URL query params
         if (isAdminParam || roleParam === 'admin') {
-          switchRole('admin');
           if (room) el.room.value = room;
+          // switchRole already calls initAdminFlow, no need to call it again
+          await switchRole('admin');
           return;
         }
 

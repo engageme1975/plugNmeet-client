@@ -164,10 +164,6 @@ function getStaticFilesToCopy(): ViteStaticCopyOptions {
         src: 'login.html',
         dest: './',
       },
-      {
-        src: 'silent-check-sso.html',
-        dest: './',
-      },
     ],
   };
 }
