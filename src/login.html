@@ -666,6 +666,17 @@
 
           el.adminUserName.textContent = `as ${name}`;
           el.adminLoggedIn.style.display = 'block';
+
+          // Auto-join if room_id and joinasadmin are present
+          const urlParams = new URLSearchParams(window.location.search);
+          const room = urlParams.get('room_id');
+          // Treat any presence of joinasadmin as true, consistent with start() logic
+          const joinAsAdmin = urlParams.has('joinasadmin');
+
+          if (room && joinAsAdmin) {
+            console.log('Auto-joining room as admin...');
+            joinRoom(room, getAdminUser());
+          }
         } else {
           // User is not authenticated - show login button
           // BUT: Don't auto-trigger login if we just processed an OAuth callback
@@ -807,19 +818,24 @@
               return;
             }
 
-            // Manual check-sso with clean URL (strip query params)
-            // This prevents "Invalid parameter: redirect_uri" if params aren't whitelisted
+            // Manual check-sso preserving query params
             const ssoChecked = sessionStorage.getItem('pnm_sso_checked');
             const urlParams = new URLSearchParams(window.location.search);
             const hasError = urlParams.has('error');
 
             if (!ssoChecked && !hasError) {
               sessionStorage.setItem('pnm_sso_checked', '1');
-              const cleanUri = window.location.origin + window.location.pathname;
-              console.log('Checking session with clean URI:', cleanUri);
+
+              // Preserve current URL params but strip OIDC params
+              const redirectUrl = new URL(window.location.href);
+              redirectUrl.hash = ''; // Ensure no fragment in redirect_uri
+              IGNORE_PARAMS.forEach(k => redirectUrl.searchParams.delete(k));
+              const targetUri = redirectUrl.toString();
+
+              console.log('Checking session with URI:', targetUri);
               await keycloak.login({
                 prompt: 'none',
-                redirectUri: cleanUri
+                redirectUri: targetUri
               });
               return;
             }
