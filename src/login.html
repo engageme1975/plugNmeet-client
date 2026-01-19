@@ -307,9 +307,9 @@
         <div id="admin-logged-out">
           <div class="status-info">
             <strong>Administrator Access</strong>
-            Login with Keycloak to join as an administrator with full meeting controls.
+            Login with Auth Shield to join as an administrator with full meeting controls.
           </div>
-          <button type="button" id="keycloak-login-btn" class="btn-primary">Login with Keycloak</button>
+          <button type="button" id="keycloak-login-btn" class="btn-primary">Login with Auth Shield</button>
         </div>
         <div id="admin-logged-in" style="display:none">
           <div class="status-info success">
@@ -823,7 +823,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const hasError = urlParams.has('error');
 
-            if (!ssoChecked && !hasError) {
+            const joinAsAdmin = isAdminParam || roleParam === 'admin';
+
+            // For admin, valid loop detection is handled by 'hasError' (and Keycloak's login page).
+            // We ignore ssoChecked to ensure we always try to find the session.
+            if (!hasError && (joinAsAdmin || !ssoChecked)) {
               sessionStorage.setItem('pnm_sso_checked', '1');
 
               // Preserve current URL params but strip OIDC params
@@ -833,10 +837,16 @@
               const targetUri = redirectUrl.toString();
 
               console.log('Checking session with URI:', targetUri);
-              await keycloak.login({
-                prompt: 'none',
+
+              const loginOptions = {
                 redirectUri: targetUri
-              });
+              };
+              // If not admin, try silent check. If admin, force redirect to ensure session is found (iframe fix)
+              if (!isAdminParam && roleParam !== 'admin') {
+                loginOptions.prompt = 'none';
+              }
+
+              await keycloak.login(loginOptions);
               return;
             }
           } catch (e) {
