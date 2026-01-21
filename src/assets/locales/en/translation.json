@@ -78,7 +78,8 @@
     "new-system-message-in-chat": "A new system message has been posted in the public chat.",
     "queue-holding-messages": "Connection problem: messages are being held. ({{error}})",
     "queue-discarded-message": "A message could not be sent and was discarded. ({{error}})",
-    "request-submitted-wait": "Your request has been submitted. Please wait for confirmation"
+    "request-submitted-wait": "Your request has been submitted. Please wait for confirmation",
+    "wait-other-uploading-to-finish": "Another upload is in progress. Please wait for it to complete."
   },
   "room-metadata": {
     "session-recording": "This meeting is being recorded.",
@@ -107,6 +108,7 @@
       "data-savings": "Data Saving",
       "notifications": "Notifications",
       "ingress": "Live Stream Input",
+      "sip-dial-in": "SIP/VoIP Dial-In",
       "show-webcams": "Show webcams",
       "show-screen-share": "Show Screen Share",
       "allow-audio-notification": "Enable Sound Notifications",
@@ -128,7 +130,8 @@
       "column-camera-position-left": "Left",
       "column-camera-position-top": "Top",
       "column-camera-position-bottom": "Bottom",
-      "focus-active-speaker-webcam": "Focus on Active Speaker"
+      "focus-active-speaker-webcam": "Focus on Active Speaker",
+      "max-num-webcam": "Max visible webcams"
     },
     "keyboard-shortcuts": {
       "title": "Keyboard shortcuts",
@@ -568,5 +571,15 @@
       "summarization-prompt-required": "Please enter instructions for how to summarize.",
       "enabled-notification-all": "This meeting's audio is now being recorded to generate a summary."
     }
+  },
+  "sip-dial-in-features": {
+    "feature-not-allow": "SIP dial-in is not enabled for this room.",
+    "hide-phone-number": "Hide caller number",
+    "activate": "Activate",
+    "pin": "Access PIN",
+    "phone-numbers": "Dial-in Numbers:",
+    "no-phone-numbers": "No phone numbers are available.",
+    "publish-to-chat": "Share to Chat",
+    "dial-in-info": "Dial-in Information"
   }
 }

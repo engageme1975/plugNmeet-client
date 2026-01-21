@@ -106,7 +106,7 @@ export default class HandleParticipants {
       if (isUserRecorder(participant.userId)) {
         return false;
       }
-      const roomMetadata = store.getState().session.currentRoom.metadata;
+      const roomMetadata = store.getState().session?.currentRoom.metadata;
       if (
         !participant.isAdmin &&
         !this._isLocalUserAdmin &&
@@ -170,7 +170,9 @@ export default class HandleParticipants {
 
   public handleParticipantMetadataUpdate = async (d: string) => {
     try {
-      const data = fromJsonString(NatsUserMetadataUpdateSchema, d);
+      const data = fromJsonString(NatsUserMetadataUpdateSchema, d, {
+        ignoreUnknownFields: true,
+      });
       await this.updateParticipantMetadata(data.userId, data.metadata);
     } catch (e) {
       console.error(e);
@@ -355,6 +357,13 @@ export default class HandleParticipants {
         },
       }),
     );
+
+    // for special case SIP
+    // our: sip_phoneNumber
+    // LK: sip_+phoneNumber
+    if (userId.startsWith('sip_')) {
+      userId = userId.replace('sip_', 'sip_+');
+    }
 
     const mediaConn = getMediaServerConn();
     const participant = mediaConn.room.getParticipantByIdentity(userId);

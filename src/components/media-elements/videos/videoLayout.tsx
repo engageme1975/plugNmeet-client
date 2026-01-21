@@ -21,6 +21,7 @@ import {
 } from './helpers/utils';
 import { useDeviceInfo } from './helpers/useDeviceInfo';
 import { AngleDown } from '../../../assets/Icons/AngleDown';
+import { updateHasWebcamPages } from '../../../store/slices/roomSettingsSlice';
 
 interface IVideoLayoutProps {
   allParticipants: ReactElement<VideoParticipantProps>[];
@@ -52,6 +53,10 @@ const VideoLayout = ({
   const isEnabledExtendedVerticalCamView = useAppSelector(
     (state) => state.bottomIconsActivity.isEnabledExtendedVerticalCamView,
   );
+  const maxNumDisplayWebcams = useAppSelector(
+    (state) => state.roomSettings.maxNumDisplayWebcams,
+  );
+
   const isRecorder = store.getState().session.currentUser?.isRecorder;
   const { isMobile, isTablet, isDesktop, isSidebarOpen, isPortrait } =
     useDeviceInfo();
@@ -62,16 +67,31 @@ const VideoLayout = ({
     useState(isVertical);
 
   useEffect(() => {
+    let verticalMode = !!isVertical;
     if (typeof pinParticipant !== 'undefined') {
-      setEnabledVerticalViewMode(true);
-    } else {
-      setEnabledVerticalViewMode(isVertical);
+      verticalMode = true;
     }
-  }, [isVertical, pinParticipant]);
+    setEnabledVerticalViewMode(verticalMode);
+  }, [dispatch, isVertical, pinParticipant]);
 
   useEffect(() => {
+    // 1. Determine the default value based on device type.
+    let deviceMax = DESKTOP_PER_PAGE;
+    if (isTablet) {
+      deviceMax = TABLET_PER_PAGE;
+    } else if (isMobile) {
+      deviceMax = MOBILE_PER_PAGE;
+    }
+
+    // 2. Determine the user's effective limit.
+    const effectiveUserLimit =
+      maxNumDisplayWebcams && maxNumDisplayWebcams > 0
+        ? maxNumDisplayWebcams
+        : deviceMax;
+
     let perPage: number;
 
+    // 3. Calculate the ideal number of webcams based purely on the current layout.
     if (isMobile) {
       if (enabledVerticalViewMode) {
         if (isPortrait) {
@@ -101,7 +121,6 @@ const VideoLayout = ({
       }
     } else {
       // PC
-      perPage = DESKTOP_PER_PAGE;
       if (enabledVerticalViewMode) {
         perPage = isEnabledExtendedVerticalCamView
           ? PC_EXTENDED_VERTICAL_PER_PAGE
@@ -115,9 +134,14 @@ const VideoLayout = ({
         perPage = isEnabledExtendedVerticalCamView
           ? PC_EXTENDED_VERTICAL_PER_PAGE
           : PC_VERTICAL_PER_PAGE;
+      } else {
+        perPage = DESKTOP_PER_PAGE;
       }
     }
-    setWebcamPerPage(perPage);
+
+    // 4. The final value is the MINIMUM of the layout's ideal value and the user's limit.
+    //    This ensures the user's data saving preference is always respected as a hard ceiling.
+    setWebcamPerPage(Math.min(perPage, effectiveUserLimit));
   }, [
     isEnabledExtendedVerticalCamView,
     enabledVerticalViewMode,
@@ -126,7 +150,13 @@ const VideoLayout = ({
     isTablet,
     isPortrait,
     isSidebarOpen,
+    maxNumDisplayWebcams,
   ]);
+
+  useEffect(() => {
+    const hasPages = allParticipants.length > webcamPerPage;
+    dispatch(updateHasWebcamPages(hasPages));
+  }, [allParticipants.length, webcamPerPage, dispatch]);
 
   const prePage = useCallback((currPage: number) => {
     const newCurrentPage = currPage - 1;
@@ -183,13 +213,13 @@ const VideoLayout = ({
         <button
           key="next-page"
           role="button"
-          className="video-camera-item webcam-next-page order-3 relative bg-Gray-900 text-white cursor-pointer flex items-center justify-between pb-4 pl-4"
+          className="video-camera-item webcam-next-page order-3 relative bg-Gray-900 text-white cursor-pointer flex items-center justify-between"
           onClick={() => nextPage(currentPage)}
         >
-          <div className="left flex-1 flex justify-center">
+          <div className="left flex-1 flex justify-center items-center absolute top-0 left-0 w-full h-full">
             {formatNextPreButton(potentialNextItems)}
           </div>
-          <div className="right pb-4 -rotate-90">
+          <div className="right pb-4 -rotate-90 absolute top-[calc(50%-12px)] right-0">
             <AngleDown />
           </div>
         </button>,
@@ -205,13 +235,13 @@ const VideoLayout = ({
         <button
           key="prev-page"
           role="button"
-          className="video-camera-item webcam-prev-page order-1 relative bg-Gray-900 text-white cursor-pointer flex items-center justify-between pb-4 pl-4"
+          className="video-camera-item webcam-prev-page order-1 relative bg-Gray-900 text-white cursor-pointer flex items-center justify-between"
           onClick={() => prePage(currentPage)}
         >
-          <div className="right rotate-90">
+          <div className="right rotate-90 absolute top-[calc(50%-12px)] left-3">
             <AngleDown />
           </div>
-          <div className="left flex-1 flex justify-center">
+          <div className="left flex-1 flex justify-center items-center absolute top-0 left-0 w-full h-full">
             {formatNextPreButton(prevItems)}
           </div>
         </button>,

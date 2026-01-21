@@ -89,7 +89,7 @@ import { createLivekitConnection } from '../livekit/utils';
 import { executeChatTranslation } from '../../components/translation-transcription/helpers/apiConnections';
 
 const RENEW_TOKEN_FREQUENT = 3 * 60 * 1000;
-const PING_INTERVAL = 60 * 1000;
+const PING_INTERVAL = 10 * 1000;
 const STATUS_CHECKER_INTERVAL = 500;
 
 export default class ConnectNats {
@@ -550,27 +550,31 @@ export default class ConnectNats {
   };
 
   /**
-   * All the events related with whiteboard will be handled here
+   * Subscribes to the room's whiteboard channel using NATS Core Pub/Sub for low latency.
    */
   private async subscribeToWhiteboard() {
-    await this._subscribe(
-      this._roomId,
-      this._subjects.whiteboard,
-      async (m) => {
-        let dataToParse = m.data;
-        if (this._enableE2EEWhiteboard) {
-          const data = await this.decryptData(dataToParse);
-          if (typeof data === 'undefined') {
-            return;
-          }
-          dataToParse = data;
+    if (!this._nc) {
+      return;
+    }
+
+    const subject = `${this._subjects.whiteboard}.${this._roomId}`;
+    const sub = this._nc.subscribe(subject);
+
+    for await (const m of sub) {
+      let dataToParse = m.data;
+      if (this._enableE2EEWhiteboard) {
+        const data = await this.decryptData(dataToParse);
+        if (typeof data === 'undefined') {
+          continue; // Skip if decryption fails
         }
-        const payload = fromBinary(DataChannelMessageSchema, dataToParse);
-        if (payload.fromUserId !== this._userId) {
-          await this.handleWhiteboard.handleWhiteboardMsg(payload);
-        }
-      },
-    );
+        dataToParse = data;
+      }
+      const payload = fromBinary(DataChannelMessageSchema, dataToParse);
+      // Still need to check if the message is from the local user to avoid echo.
+      if (payload.fromUserId !== this._userId) {
+        await this.handleWhiteboard.handleWhiteboardMsg(payload);
+      }
+    }
   }
 
   public sendWhiteboardData = async (
@@ -578,6 +582,11 @@ export default class ConnectNats {
     msg: string,
     to?: string,
   ) => {
+    if (!this._nc) {
+      console.error('NATS connection not available to send whiteboard data.');
+      return;
+    }
+
     const data = create(DataChannelMessageSchema, {
       type,
       fromUserId: this._userId,
@@ -589,40 +598,41 @@ export default class ConnectNats {
     if (this._enableE2EEWhiteboard) {
       const data = await this.encryptData(payload);
       if (typeof data === 'undefined') {
-        return;
+        return; // Don't send if encryption fails
       }
       payload = data;
     }
 
-    const subject =
-      this._roomId + ':' + this._subjects.whiteboard + '.' + this._userId;
-    this.messageQueue.addToQueue({
-      subject,
-      payload,
-    });
+    const subject = `${this._subjects.whiteboard}.${this._roomId}`;
+    this._nc.publish(subject, payload);
   };
 
   /**
-   * subscribeToDataChannel to communicate with each other
+   * Subscribes to the room's data channel using NATS Core Pub/Sub for low latency.
    * Mostly with client to client
    */
   private async subscribeToDataChannel() {
-    await this._subscribe(
-      this._roomId,
-      this._subjects.dataChannel,
-      async (m) => {
-        let dataToParse = m.data;
-        if (this._enableE2EE) {
-          const data = await this.decryptData(dataToParse);
-          if (typeof data === 'undefined') {
-            return;
-          }
-          dataToParse = data;
+    if (!this._nc) {
+      return;
+    }
+
+    const subject = `${this._subjects.dataChannel}.${this._roomId}`;
+    const sub = this._nc.subscribe(subject);
+
+    for await (const m of sub) {
+      let dataToParse = m.data;
+      if (this._enableE2EE) {
+        const data = await this.decryptData(dataToParse);
+        if (typeof data === 'undefined') {
+          continue;
         }
-        const payload = fromBinary(DataChannelMessageSchema, dataToParse);
+        dataToParse = data;
+      }
+      const payload = fromBinary(DataChannelMessageSchema, dataToParse);
+      if (payload.fromUserId !== this._userId) {
         await this.handleDataMsg.handleMessage(payload);
-      },
-    );
+      }
+    }
   }
 
   /**
@@ -633,6 +643,11 @@ export default class ConnectNats {
     msg: string,
     to?: string,
   ) => {
+    if (!this._nc) {
+      console.error('NATS connection not available to send data message.');
+      return;
+    }
+
     const data = create(DataChannelMessageSchema, {
       type,
       fromUserId: this._userId,
@@ -649,12 +664,8 @@ export default class ConnectNats {
       payload = data;
     }
 
-    const subject =
-      this._roomId + ':' + this._subjects.dataChannel + '.' + this._userId;
-    this.messageQueue.addToQueue({
-      subject,
-      payload,
-    });
+    const subject = `${this._subjects.dataChannel}.${this._roomId}`;
+    this._nc.publish(subject, payload);
   };
 
   /**
@@ -691,8 +702,6 @@ export default class ConnectNats {
       this.handleParticipants.handleParticipantOffline(p.msg),
     [NatsMsgServerToClientEvents.USER_METADATA_UPDATE]: (p) =>
       this.handleParticipants.handleParticipantMetadataUpdate(p.msg),
-    [NatsMsgServerToClientEvents.AZURE_COGNITIVE_SERVICE_SPEECH_TOKEN]: (p) =>
-      this.handleSystemData.handleAzureToken(p.msg),
     [NatsMsgServerToClientEvents.SESSION_ENDED]: (p) => this.endSession(p.msg),
     [NatsMsgServerToClientEvents.POLL_CREATED]: (p) =>
       this.handleSystemData.handlePoll(p),
@@ -776,7 +785,9 @@ export default class ConnectNats {
     // 1. We'll try to decode the message.
     let data: NatsInitialData;
     try {
-      data = fromJsonString(NatsInitialDataSchema, msg);
+      data = fromJsonString(NatsInitialDataSchema, msg, {
+        ignoreUnknownFields: true,
+      });
     } catch (e: any) {
       console.error(e);
       this.setErrorStatus(
@@ -864,7 +875,9 @@ export default class ConnectNats {
     try {
       const onlineUsers: string[] = JSON.parse(msg);
       for (let i = 0; i < onlineUsers.length; i++) {
-        const user = fromJson(NatsKvUserInfoSchema, onlineUsers[i]);
+        const user = fromJson(NatsKvUserInfoSchema, onlineUsers[i], {
+          ignoreUnknownFields: true,
+        });
         await this.handleParticipants.addRemoteParticipant(user);
       }
       await this.onAfterUserReady();
